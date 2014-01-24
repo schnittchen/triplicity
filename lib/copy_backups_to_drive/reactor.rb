@@ -1,7 +1,10 @@
 module CopyBackupsToDrive
   class Reactor
 
+    attr_accessor :sleep_time
+
     def initialize
+      @sleep_time = 5 # raise this some time...
       @running = true
       @scheduled_tasks = []
       @pending_work_handler = ->{}
@@ -53,7 +56,7 @@ module CopyBackupsToDrive
 
     def interruptible_sleep
       @sleeping = true
-      sleep 5
+      sleep @sleep_time
     rescue InterruptSleep
       @sleeping = false
     end
