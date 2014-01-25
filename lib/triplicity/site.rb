@@ -1,6 +1,6 @@
 require 'pathname'
 
-module CopyBackupsToDrive
+module Triplicity
   class Site
     attr_accessor :path
 

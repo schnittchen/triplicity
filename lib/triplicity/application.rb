@@ -1,6 +1,6 @@
-require 'copy_backups_to_drive/reactor'
+require 'triplicity/reactor'
 
-module CopyBackupsToDrive
+module Triplicity
   class Application
     def initialize
       @reactor = Reactor.new

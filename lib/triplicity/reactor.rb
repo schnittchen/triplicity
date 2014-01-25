@@ -1,4 +1,4 @@
-module CopyBackupsToDrive
+module Triplicity
   class Reactor
 
     attr_accessor :sleep_time
