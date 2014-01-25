@@ -9,10 +9,11 @@ module CopyBackupsToDrive
     def run
       @reactor.pending_work_handler { puts "work handler" }
 
-      trap("INT") {
-        @reactor.schedule { puts "scheduled" }
-        @reactor.interrupt_sleep
-      }
+      ## working example:
+      # trap("INT") {
+      #   @reactor.schedule { puts "scheduled" }
+      #   @reactor.interrupt_sleep
+      # }
 
       @reactor.run
     end
