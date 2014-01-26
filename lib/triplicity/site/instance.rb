@@ -1,6 +1,7 @@
 require 'pathname'
 
 require 'triplicity/site/asset'
+require 'triplicity/site/chain'
 
 module Triplicity
   module Site
@@ -20,19 +21,21 @@ module Triplicity
       def calculate_chains
         sorted = asset_candidates.sort_by(&:timestamp)
 
-        sorted.slice_before(&:full?).map do |chain|
-          next nil unless chain.first.full?
+        sorted.slice_before(&:full?).map do |assets|
+          next nil unless assets.first.full?
 
-          chain.each_cons(2) do |pred, succ|
+          assets.each_cons(2) do |pred, succ|
             next unless succ.timestamp_from == pred.timestamp
             succ.base = pred
             pred.basing = succ
           end
 
-          [
-            chain.first,
-            *chain.drop(1).take_while(&:base)
+          assets = [
+            assets.first,
+            *assets.drop(1).take_while(&:base)
           ]
+
+          Chain.new(assets)
         end.compact
       end
 

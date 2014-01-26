@@ -4,7 +4,7 @@ require 'fileutils'
 module Triplicity
   module Site
     class Asset
-      attr_accessor :base, :basing
+      attr_accessor :base, :basing, :manifest_path
 
       def initialize(manifest_path)
         @manifest_path = manifest_path
