@@ -1,6 +1,7 @@
 require 'dbus'
 
 require 'triplicity/destination/base'
+require 'triplicity/site'
 
 module Triplicity
   module Destination
@@ -8,7 +9,18 @@ module Triplicity
       attr_reader :device_uuid, :rel_path
 
       def with_accessible_site
-        # yields site if possible
+        return unless path = current_path
+
+        Dir.chdir(path) do
+          yield Site.new(path)
+        end
+      end
+
+      private
+
+      def current_path
+        fs = mounted_filesystems.find { |s| s[:uuid] == device_uuid }
+        Pathname(fs[:mountpoint]) + rel_path if fs
       end
 
       def udisk2_service
