@@ -6,7 +6,7 @@ require 'triplicity/site'
 module Triplicity
   module Destination
     class FsPathOnDevice < Base
-      attr_reader :device_uuid, :rel_path
+      attr_accessor :device_uuid, :rel_path
 
       def with_accessible_site
         return unless path = current_path
