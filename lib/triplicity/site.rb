@@ -1,4 +1,5 @@
 require 'pathname'
+require 'fileutils'
 
 module Triplicity
   class Site
@@ -52,6 +53,11 @@ module Triplicity
         paths.reverse.each do |path|
           path.unlink
         end
+      end
+
+      def copy_to(target)
+        from_paths = [*paths.drop(1), paths.first]
+        FileUtils.cp(from_paths, target)
       end
 
       private
