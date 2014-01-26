@@ -18,7 +18,7 @@ module Triplicity
         return unless path = current_path
 
         Dir.chdir(path) do
-          yield Site.new(path)
+          yield Site.from_path(path)
         end
       end
 
