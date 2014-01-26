@@ -2,7 +2,7 @@ require 'pathname'
 require 'fileutils'
 
 module Triplicity
-  class Site
+  module Site
     class Asset
       attr_accessor :base, :basing
 
