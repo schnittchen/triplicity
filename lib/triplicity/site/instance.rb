@@ -16,6 +16,10 @@ module Triplicity
         @chains ||= calculate_chains
       end
 
+      def latest_timestamp
+        chains.map(&:latest_timestamp).max
+      end
+
       private
 
       def calculate_chains

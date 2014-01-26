@@ -7,6 +7,10 @@ module Triplicity
         @assets = assets
       end
 
+      def latest_timestamp
+        assets.map(&:timestamp).max
+      end
+
       def inspect
         "##{self.class.name}: #{@assets.first.manifest_path}>"
       end
