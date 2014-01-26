@@ -5,7 +5,7 @@ module Triplicity
   module Destination
     class Base
       attr_reader :max_space
-      attr_accessor :youngest_timestamp
+      attr_accessor :latest_timestamp
 
       def initialize(config = {})
         @max_space = canonicalize_max_space(config['max_space'])
