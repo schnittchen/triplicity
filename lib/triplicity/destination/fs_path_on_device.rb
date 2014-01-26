@@ -8,6 +8,12 @@ module Triplicity
     class FsPathOnDevice < Base
       attr_accessor :device_uuid, :rel_path
 
+      def initialize(config = {})
+        super
+        self.device_uuid = config['device_uuid']
+        self.rel_path = config['rel_path']
+      end
+
       def with_accessible_site
         return unless path = current_path
 
