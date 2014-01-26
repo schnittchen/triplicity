@@ -20,6 +20,10 @@ module Triplicity
         chains.map(&:latest_timestamp).max
       end
 
+      def empty?
+        chains.empty?
+      end
+
       private
 
       def calculate_chains
