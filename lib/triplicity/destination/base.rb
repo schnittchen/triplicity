@@ -11,6 +11,12 @@ module Triplicity
         @max_space = canonicalize_max_space(config['max_space'])
       end
 
+      def ident
+        @ident ||= Digest::SHA256.digest(ident_data.to_json)
+      end
+
+      private
+
       def canonicalize_max_space(value)
         return Float(value) if value.is_a?(Numeric)
 

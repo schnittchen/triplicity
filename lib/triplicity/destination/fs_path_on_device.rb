@@ -18,6 +18,10 @@ module Triplicity
 
       private
 
+      def ident_data
+        [device_uuid, rel_path]
+      end
+
       def current_path
         fs = mounted_filesystems.find { |s| s[:uuid] == device_uuid }
         Pathname(fs[:mountpoint]) + rel_path if fs
