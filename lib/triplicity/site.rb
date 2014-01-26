@@ -65,13 +65,13 @@ module Triplicity
       @path = Pathname(path)
     end
 
-    def assets
-      @assets ||= calculate_assets
+    def chains
+      @chains ||= calculate_chains
     end
 
     private
 
-    def calculate_assets
+    def calculate_chains
       sorted = asset_candidates.sort_by(&:timestamp)
 
       sorted.slice_before(&:full?).map do |chain|
