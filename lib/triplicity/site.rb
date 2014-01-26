@@ -44,6 +44,16 @@ module Triplicity
         size + paths.length * 4096
       end
 
+      def inspect
+        "##{self.class.name}: #{@manifest_path}>"
+      end
+
+      def remove
+        paths.reverse.each do |path|
+          path.unlink
+        end
+      end
+
       private
 
       TIMESTAMP_RE = '[\dTZ]{16}'
