@@ -1,5 +1,6 @@
 require 'pathname'
 
+require 'triplicity/sorting'
 require 'triplicity/site/asset'
 require 'triplicity/site/chain'
 
@@ -26,10 +27,10 @@ module Triplicity
 
       private
 
-      def calculate_chains
-        sorted = asset_candidates.sort_by(&:timestamp)
+      include Sorting
 
-        sorted.slice_before(&:full?).map do |assets|
+      def calculate_chains
+        oldest_first(asset_candidates).slice_before(&:full?).map do |assets|
           next nil unless assets.first.full?
 
           assets.each_cons(2) do |pred, succ|
@@ -50,7 +51,7 @@ module Triplicity
       def asset_candidates
         Pathname.glob(path + '*.manifest').map do |manifest_path|
           Asset.new(manifest_path)
-        end.sort_by(&:timestamp_from)
+        end
       end
     end
   end

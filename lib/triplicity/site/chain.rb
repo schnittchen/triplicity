@@ -1,8 +1,12 @@
+require 'triplicity/sorting'
+
 module Triplicity
   module Site
     class Chain
+      include Sorting
+
       def initialize(assets)
-        @assets = assets.sort_by(&:timestamp)
+        @assets = oldest_first(assets)
       end
 
       def assets
