@@ -21,6 +21,11 @@ module Triplicity
         !!@assets.find { |asset| asset.timestamp == timestamp }
       end
 
+      # this can serve as an identifier
+      def base_timestamp
+        @assets.first.timestamp
+      end
+
       def latest_timestamp
         @assets.last.timestamp
       end
