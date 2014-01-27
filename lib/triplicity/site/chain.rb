@@ -13,6 +13,14 @@ module Triplicity
         @assets.to_enum
       end
 
+      def self.empty
+        new([])
+      end
+
+      def has_asset_timestamp?(timestamp)
+        !!@assets.find { |asset| asset.timestamp == timestamp }
+      end
+
       def latest_timestamp
         @assets.last.timestamp
       end
@@ -33,8 +41,11 @@ module Triplicity
         @assets.reverse.each(&:remove)
       end
 
-      def copy_to(target)
-        @assets.each { |asset| asset.copy_to target }
+      def copy_to(target, existing_chain = nil)
+        existing_chain ||= Chain.empty
+        @assets.each do |asset|
+          asset.copy_to target unless existing_chain.has_asset_timestamp?(asset.timestamp)
+        end
       end
     end
   end
