@@ -1,10 +1,12 @@
 module Triplicity
   module Site
     class Chain
-      attr_reader :assets
-
       def initialize(assets)
-        @assets = assets
+        @assets = assets.sort_by(&:timestamp)
+      end
+
+      def assets
+        @assets.to_enum
       end
 
       def latest_timestamp
