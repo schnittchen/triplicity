@@ -14,7 +14,7 @@ module Triplicity
       end
 
       def latest_timestamp
-        assets.map(&:timestamp).max
+        @assets.last.timestamp
       end
 
       def inspect
