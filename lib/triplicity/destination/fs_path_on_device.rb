@@ -20,6 +20,8 @@ module Triplicity
         Dir.chdir(path) do
           yield Site.from_path(path)
         end
+
+        true
       end
 
       private
