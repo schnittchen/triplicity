@@ -29,7 +29,7 @@ module Triplicity
     end
 
     def shutdown
-      @running = fasle
+      @running = false
     end
 
     def running?
