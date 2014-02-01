@@ -19,8 +19,6 @@ module Triplicity
       @dbus_main << @breaker
     end
 
-    # @TODO expose these two on a public API object
-
     def system_bus
       @system_bus ||= DBus.system_bus.tap { |bus| @buses << bus }
     end

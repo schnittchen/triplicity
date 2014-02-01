@@ -1,21 +1,38 @@
+require 'triplicity/dbus_loop_wrapper'
 require 'triplicity/reactor'
 
 module Triplicity
   class Application
-    def initialize
-      @reactor = Reactor.new
+    attr_reader :dbus_busses, :reactor
+
+    def self.start
+      send(:new).setup_and_run
     end
 
-    def run
-      @reactor.pending_work_handler { puts "work handler" }
+    def system_bus
+      @dbus_loop_wrapper.system_bus
+    end
 
-      ## working example:
-      # trap("INT") {
-      #   @reactor.schedule { puts "scheduled" }
-      #   @reactor.interrupt_sleep
-      # }
+    def session_bus
+      @dbus_loop_wrapper.session_bus
+    end
 
-      @reactor.run
+    private
+
+    def initialize
+      setup_and_run
+    end
+
+    def setup_and_run
+      @dbus_loop_wrapper = Triplicity::DbusLoopWrapper.new
+      Reactor.new(@dbus_loop_wrapper) do |reactor|
+        @reactor = reactor
+
+        setup
+      end
+    end
+
+    def setup
     end
   end
 end
