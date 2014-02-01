@@ -1,64 +1,56 @@
 module Triplicity
   class Reactor
-
-    attr_accessor :sleep_time
-
-    def initialize
-      @sleep_time = 5 # raise this some time...
-      @running = true
-      @scheduled_tasks = []
-      @pending_work_handler = ->{}
+    def initialize(dbus_wrapper)
+      Thread.abort_on_exception = true
+      @rendezvous_mutex = Mutex.new
+      @dbus_wrapper = dbus_wrapper
+      @dbus_thread = Thread.current
+      yield self
+      @dbus_wrapper.run_loop
     end
 
-    def schedule
-      @scheduled_tasks << Proc.new
+    # def quit
+    # end
+
+    def asap
+      @dbus_wrapper.asap(&Proc.new)
     end
 
-    def pending_work_handler
-      @pending_work_handler = Proc.new
+    def schedule_in(seconds)
+      @dbus_wrapper.schedule_in(seconds, &Proc.new)
     end
 
-    def run
-      run_round while running?
-    end
+    def on_dbus_thread
+      return yield if on_dbus_thread?
 
-    def interrupt_sleep
-      return unless @sleeping
+      cv = ConditionVariable.new
+      executed = false
+      result = nil
+      exception = nil
 
-      raise InterruptSleep
-    end
+      @rendezvous_mutex.synchronize do
+        asap do
+          begin
+            result = yield
+          rescue => e
+            exception = e
+          end
+          @rendezvous_mutex.synchronize do
+            executed = true
+            cv.signal
+          end
+        end
+        cv.wait(@rendezvous_mutex) until executed
+      end
 
-    def shutdown
-      @running = false
-    end
-
-    def running?
-      @running
+      raise exception if exception
+      result
     end
 
     private
 
-    def run_round
-      sleep_some_time
-
-      while running? and task = @scheduled_tasks.pop
-        task.call
-      end
-
-      @pending_work_handler.call if running?
-    end
-
-    InterruptSleep = Class.new(Exception)
-
-    def sleep_some_time
-      interruptible_sleep
-    end
-
-    def interruptible_sleep
-      @sleeping = true
-      sleep @sleep_time
-    rescue InterruptSleep
-      @sleeping = false
+    def on_dbus_thread?
+      Thread.current == @dbus_thread
     end
   end
 end
