@@ -1,11 +1,11 @@
 require 'dbus'
 
-require 'triplicity/destination/base'
+require 'triplicity/destination/legacy_base'
 require 'triplicity/site'
 
 module Triplicity
   module Destination
-    class FsPathOnDevice < Base
+    class FsPathOnDevice < LegacyBase
       attr_accessor :device_uuid, :rel_path
 
       def initialize(config = {})

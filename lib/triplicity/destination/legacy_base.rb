@@ -3,7 +3,7 @@ require 'json'
 
 module Triplicity
   module Destination
-    class Base
+    class LegacyBase
       attr_reader :max_space
       attr_accessor :latest_timestamp
 
