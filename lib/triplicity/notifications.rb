@@ -50,6 +50,10 @@ module Triplicity
       end
     end
 
+    def initialize(session_bus = DBus.session_bus)
+      @session_bus = session_bus
+    end
+
     private
 
     def interface
@@ -61,7 +65,7 @@ module Triplicity
     end
 
     def service
-      DBus.session_bus["org.freedesktop.Notifications"]
+      @session_bus["org.freedesktop.Notifications"]
     end
   end
 end
