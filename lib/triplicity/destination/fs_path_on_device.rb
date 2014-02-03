@@ -8,6 +8,8 @@ module Triplicity
     class FsPathOnDevice < LegacyBase
       attr_accessor :device_uuid, :rel_path
 
+      attr_accessor :application
+
       def initialize(config = {})
         super
         self.device_uuid = config['device_uuid']
@@ -26,46 +28,17 @@ module Triplicity
 
       private
 
+      def disk
+        @disk ||= @application.udisk2.disk_by_uuid(device_uuid)
+      end
+
       def ident_data
         [device_uuid, rel_path]
       end
 
       def current_path
-        fs = mounted_filesystems.find { |s| s[:uuid] == device_uuid }
-        Pathname(fs[:mountpoint]) + rel_path if fs
-      end
-
-      def udisk2_service
-        DBus.system_bus["org.freedesktop.UDisks2"]
-      end
-
-      def udisk2_objects
-        udisk = udisk2_service.object '/org/freedesktop/UDisks2'
-        udisk.introspect
-        object_manager_interface = udisk['org.freedesktop.DBus.ObjectManager']
-        
-        object_manager_interface.GetManagedObjects
-      end
-
-      def mounted_filesystems
-        udisk2_objects.first.select do |path, interfaces|
-          if fs = interfaces['org.freedesktop.UDisks2.Filesystem']
-            !fs['MountPoints'].empty?
-          end
-        end.map do |path, interfaces|
-          fs = interfaces['org.freedesktop.UDisks2.Filesystem']
-          block = interfaces['org.freedesktop.UDisks2.Block']
-
-          {
-            uuid: block['IdUUID'],
-            mountpoint: array_of_bytes_to_utf8(fs['MountPoints'].first)
-          }
-        end
-      end
-
-      def array_of_bytes_to_utf8(a)
-        # a is a zero-delimited array of bytes forming an utf-8 string
-        a.pack('C' * (a.length - 1)).force_encoding('utf-8')
+        mountpoint = disk.mountpoint
+        Pathname(mountpoint) + rel_path if mountpoint
       end
     end
   end
