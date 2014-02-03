@@ -4,10 +4,11 @@ module Triplicity
   class SyncAction
     include Sorting
 
-    attr_reader :source_site, :target_site
+    attr_reader :source_site, :target_site, :latest_target_timestamp
 
     def initialize(source_site, target_site, max_space)
       @source_site, @target_site = source_site, target_site
+      @latest_target_timestamp = target_site.latest_timestamp
 
       # mutating state:
       @remaining_space = max_space
@@ -62,6 +63,7 @@ module Triplicity
 
       target_chain = @target_site.chains.find { |tc| tc.base_timestamp == chain.base_timestamp }
       chain.copy_to(target_site.path, target_chain)
+      @latest_target_timestamp = [chain.latest_timestamp, @latest_target_timestamp].max
     end
 
     def truncate_scenarios(chains)
