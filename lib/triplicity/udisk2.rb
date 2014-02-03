@@ -71,12 +71,6 @@ module Triplicity
       @mutex.synchronize { kick_off; @disk_handles[uuid].disk }
     end
 
-    def fs
-      @application.reactor.on_dbus_thread do
-        mounted_filesystems
-      end
-    end
-
     private
 
     def create_disk_handle(uuid)
