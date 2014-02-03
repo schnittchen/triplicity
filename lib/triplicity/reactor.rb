@@ -90,6 +90,14 @@ module Triplicity
       result
     end
 
+    def safe_trap(signal)
+      # Avoid deadlock by spawning a thread
+      # https://www.ruby-forum.com/topic/4411227
+      trap(signal) do
+        Thread.new { yield }
+      end
+    end
+
     private
 
     def calculate_wakeup_delay
