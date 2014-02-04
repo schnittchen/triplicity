@@ -1,14 +1,23 @@
 require 'digest'
 require 'json'
 
+require 'triplicity/util/on_when'
+
 module Triplicity
   module Destination
     class Base
       class UpToDateness
+        include OnWhen
+
+        on_when.event :lost
+        on_when.delegates_subscriptions(self)
+
+        alias_method :when_lost, :on_lost # @TODO
+
         def initialize(cache, cache_ident)
           @cache, @cache_ident = cache, cache_ident
           @destination_timestamp = @cache.destination_latest_timestamp(@cache_ident)
-          @when_lost_block = ->{}
+          @on_when = on_when_new
         end
 
         def given?
@@ -24,16 +33,9 @@ module Triplicity
         #   !!@destination_timestamp
         # end
 
-        # this block may effectively be called when given? is in any state, because
-        # the listener needs to wait on given? with a condition variable anyway
-        def when_lost(&block)
-          @when_lost_block = block
-          self
-        end
-
         def update_primary_timestamp(timestamp)
           @primary_timestamp = timestamp
-          @when_lost_block.call unless given?
+          on_when.trigger_lost unless given?
         end
 
         def update_destination_timestamp(timestamp)
@@ -42,7 +44,7 @@ module Triplicity
           # ensures it is only happening once at a time)
           @cache.destination_latest_timestamp(@cache_ident, timestamp)
           @destination_timestamp = timestamp
-          @when_lost_block.call unless given?
+          on_when.trigger_lost unless given?
         end
       end
 
