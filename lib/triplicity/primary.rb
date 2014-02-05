@@ -1,23 +1,26 @@
+require 'triplicity/util/on_when'
+
 module Triplicity
   class Primary
+    include OnWhen
+
+    on_when.delegates_subscriptions self
+    on_when.event :change
+
     attr_reader :name
 
     def initialize(path, name)
+      @on_when = on_when_new
       @path, @name = path, name
-      @subscribers = []
     end
 
     def site
       @site ||= Site.from_path(@path)
     end
 
-    def subscribe_for_changes(&block)
-      @subscribers << block
-    end
-
     def site_changed!
       @site = nil
-      @subscribers.each(&:call)
+      on_when.trigger_change
     end
   end
 end
