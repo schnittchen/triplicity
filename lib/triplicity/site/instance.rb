@@ -25,10 +25,6 @@ module Triplicity
         chains.empty?
       end
 
-      def rescaning_needed!
-        @chains = nil
-      end
-
       private
 
       include Sorting
