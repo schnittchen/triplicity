@@ -33,7 +33,7 @@ module Triplicity
         #   !!@destination_timestamp
         # end
 
-        def update_primary_timestamp(timestamp)
+        def primary_timestamp_changed(timestamp)
           @primary_timestamp = timestamp
           on_when.trigger_lost unless given?
         end
@@ -58,10 +58,6 @@ module Triplicity
 
       def up_to_dateness
         @up_to_dateness ||= UpToDateness.new(@application.cache, cache_ident)
-      end
-
-      def primary_timestamp_changed(timestamp)
-        up_to_dateness.update_primary_timestamp(timestamp)
       end
 
       private
