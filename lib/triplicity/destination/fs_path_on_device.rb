@@ -44,12 +44,8 @@ module Triplicity
         @max_space = options['max_space']
 
         @disk = @application.udisk2.disk_by_uuid(@device_uuid)
-        @disk_available = false
-        @disk.on_available do
-          @disk_available = true
+        @disk.when_available do
           thread.poke!
-        end.on_unavailable do
-          @disk_available = false
         end
 
         yield Subscription.new(self)
@@ -79,7 +75,7 @@ module Triplicity
 
       def ready_for_operation?
         # XXX if there was an error, this means we will try again and again without waiting
-        !up_to_dateness.given? and @disk_available
+        !up_to_dateness.given? and @disk.available?
       end
 
       def attemt_to_copy

@@ -19,51 +19,30 @@ module Triplicity
       @kicked_off = true.tap { schedule_polling }
     end
 
-    DiskHandle = Struct.new(:uuid, :available_handlers, :unavailable_handlers, :mountpoint, :disk)
-
     class Disk
-      attr_reader :uuid
-
-      def initialize(uuid, available_handlers, unavailable_handlers, mountpoint_getter, mutex)
-        @uuid = uuid
-        @available_handlers = available_handlers
-        @unavailable_handlers = unavailable_handlers
-        @mountpoint_getter = mountpoint_getter
-        @mutex = mutex
+      def initialize(handle)
+        @handle = handle
+        @on_when = handle.on_when
       end
 
-      def on_available(&block)
-        call_now = false
-
-        mtx do
-          call_now = true if mountpoint
-          @available_handlers << block
-        end
-
-        block.call(self) if call_now
-        self
-      end
-
-      def on_unavailable(&block)
-        call_now = false
-
-        mtx do
-          call_now = true if !mountpoint
-          @unavailable_handlers << block
-        end
-
-        block.call(self) if call_now
-        self
+      def uuid
+        @handle.uuid
       end
 
       def mountpoint
-        @mountpoint_getter.call
+        @handle.mountpoint
       end
+    end
 
-      private
+    DiskHandle = Struct.new(:uuid, :available_handlers, :unavailable_handlers, :mountpoint, :disk) do
+      include OnWhen
 
-      def mtx
-        @mutex.synchronize(&Proc.new)
+      on_when.condition :available
+      on_when.delegates_subscriptions Disk
+
+      def initialize(*)
+        super
+        @on_when = on_when_new
       end
     end
 
@@ -74,14 +53,8 @@ module Triplicity
     private
 
     def create_disk_handle(uuid)
-      available_handlers = []
-      unavailable_handlers = []
-
       result = DiskHandle.new
-      result.available_handlers = available_handlers
-      result.unavailable_handlers = unavailable_handlers
-      result.disk = Disk.new(uuid, available_handlers, unavailable_handlers,
-        result.method(:mountpoint), @mutex)
+      result.disk = Disk.new(result)
       result
     end
 
@@ -89,28 +62,19 @@ module Triplicity
       # @disk_handles may grow here. If we miss a disk because of this, it will be
       # handled next time through the polling cycle.
       @disk_handles.each_pair do |uuid, disk_handle|
-        disk = disk_handle.disk
         if disk_handle.mountpoint
           # we previously assumed this disk to be mounted
 
           system = mounted_filesystems.find { |sys| sys[:uuid] == uuid }
-          if system
-            disk_handle.mountpoint = system[:mountpoint]
-          else
-            mtx do
-              disk_handle.mountpoint = nil
-              disk_handle.unavailable_handlers.dup
-            end.each { |handler| handler.call(disk) }
-          end
+          disk_handle.mountpoint = system[:mountpoint] if system
         else
           # we previously assumed this disk not to be mounted
 
           system = mounted_filesystems.find { |sys| sys[:uuid] == uuid }
           if system
-            mtx do
+            disk_handle.on_when.signal_available do
               disk_handle.mountpoint = system[:mountpoint]
-              disk_handle.available_handlers.dup
-            end.each { |handler| handler.call(disk) }
+            end
           end
         end
       end
