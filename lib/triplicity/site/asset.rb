@@ -37,7 +37,9 @@ module Triplicity
       end
 
       def size
-        paths.map(&:size).reduce(:+)
+        paths.map do |path|
+          @site.operations.file_size(path.basename.to_s)
+        end.reduce(:+)
       end
 
       def pessimistic_size
@@ -50,13 +52,21 @@ module Triplicity
 
       def remove
         paths.reverse.each do |path|
-          path.unlink
+          @site.operations.remove path.basename.to_s
         end
       end
 
-      def copy_to(target)
+      # must only be used for local assets
+      def upload_to(target_site)
         from_paths = [*paths.drop(1), paths.first]
-        FileUtils.cp(from_paths, target)
+        local_pathnames = from_paths.map do |full_path|
+          name = full_path.basename.to_s
+          @site.operations.local_pathname(name)
+        end
+
+        local_pathnames.each do |local_pathname|
+          target_site.operations.upload local_pathname
+        end
       end
 
       private
@@ -69,9 +79,11 @@ module Triplicity
       end
 
       def calculate_paths
+        name = Pathname(@full_basename).basename.to_s
+
         [
           @manifest_path,
-          *Pathname.glob(@full_basename + '*.difftar.gz'),
+          *@site.operations.glob(name + '*.difftar.gz')
         ]
       end
     end

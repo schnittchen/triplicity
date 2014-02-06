@@ -61,8 +61,7 @@ module Triplicity
       drop.each(&:remove)
       old_target_chains.replace keep # bookkeeping
 
-      target_chain = @target_site.chains.find { |tc| tc.base_timestamp == chain.base_timestamp }
-      chain.copy_to(target_site.path, target_chain)
+      chain.upload_to @target_site
       @latest_target_timestamp = [chain.latest_timestamp, @latest_target_timestamp].max
     end
 

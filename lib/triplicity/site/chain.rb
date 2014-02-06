@@ -46,10 +46,9 @@ module Triplicity
         @assets.reverse.each(&:remove)
       end
 
-      def copy_to(target, existing_chain = nil)
-        existing_chain ||= Chain.empty
+      def upload_to(site)
         @assets.each do |asset|
-          asset.copy_to target unless existing_chain.has_asset_timestamp?(asset.timestamp)
+          asset.upload_to(site)
         end
       end
     end
