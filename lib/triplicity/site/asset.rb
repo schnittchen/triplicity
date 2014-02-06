@@ -6,7 +6,8 @@ module Triplicity
     class Asset
       attr_accessor :base, :basing, :manifest_path
 
-      def initialize(manifest_path)
+      def initialize(site, manifest_path)
+        @site = site
         @manifest_path = manifest_path
         @full_basename = (manifest_path.parent + manifest_path.basename('.manifest')).to_s
       end
