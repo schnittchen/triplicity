@@ -65,6 +65,15 @@ module OnWhen
       subscription_delegate_module.send(:define_method, subscribe_method_name) do |&listener|
         on_when.send(subscribe_method_name, &listener)
       end
+
+      condition_method_name = name + '?'
+
+      instance_handle_class.send(:define_method, condition_method_name) do
+        @states[name]
+      end
+      subscription_delegate_module.send(:define_method, condition_method_name) do
+        on_when.send(condition_method_name)
+      end
     end
 
     def delegates_subscriptions(klass)
