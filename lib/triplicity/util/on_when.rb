@@ -39,11 +39,11 @@ module OnWhen
       name = name.to_s
       names << name
 
-      instance_handle_class.send(:define_method, "signal_#{name}") do |state|
+      instance_handle_class.send(:define_method, "signal_#{name}") do |state = true, &block|
         state = !!state
         recipients = @mutex.synchronize do
           old_state = @states[name]
-          @states[name] = state
+          @states[name] = block ? block.call : state
 
           @listeners[name].dup if state && !old_state
         end || []
