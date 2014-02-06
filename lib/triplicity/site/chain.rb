@@ -31,7 +31,7 @@ module Triplicity
       end
 
       def inspect
-        "##{self.class.name}: #{@assets.first.manifest_path}>"
+        "##{self.class.name}: #{@assets.first.mainfest_name}>"
       end
 
       def size

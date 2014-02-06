@@ -4,12 +4,11 @@ require 'fileutils'
 module Triplicity
   module Site
     class Asset
-      attr_accessor :base, :basing, :manifest_path
+      attr_accessor :base, :basing, :manifest_name
 
-      def initialize(site, manifest_path)
+      def initialize(site, manifest_name)
         @site = site
-        @manifest_path = manifest_path
-        @full_basename = (manifest_path.parent + manifest_path.basename('.manifest')).to_s
+        @manifest_name = manifest_name
       end
 
       def timestamp
@@ -32,35 +31,29 @@ module Triplicity
         !incremental?
       end
 
-      def paths
-        @paths ||= calculate_paths
-      end
-
       def size
-        paths.map do |path|
-          @site.operations.file_size(path.basename.to_s)
+        file_names.map do |name|
+          @site.operations.file_size(name)
         end.reduce(:+)
       end
 
       def pessimistic_size
-        size + paths.length * 4096
+        size + file_names.length * 4096
       end
 
       def inspect
-        "##{self.class.name}: #{@manifest_path}>"
+        "##{self.class.name}: #{@manifest_name} of #{@site.inspect} >"
       end
 
       def remove
-        paths.reverse.each do |path|
-          @site.operations.remove path.basename.to_s
+        file_names.reverse.each do |name|
+          @site.operations.remove name
         end
       end
 
       # must only be used for local assets
       def upload_to(target_site)
-        from_paths = [*paths.drop(1), paths.first]
-        local_pathnames = from_paths.map do |full_path|
-          name = full_path.basename.to_s
+        local_pathnames = [*file_names.drop(1), file_names.first].map do |name|
           @site.operations.local_pathname(name)
         end
 
@@ -71,18 +64,22 @@ module Triplicity
 
       private
 
+      def file_names
+        @file_names ||= calculate_file_names
+      end
+
       TIMESTAMP_RE = '[\dTZ]{16}'
       CAPTURE_TS = "(#{TIMESTAMP_RE})"
 
       def match_segments
-        @match_segments ||= %r{-(inc|full)\.#{CAPTURE_TS}(?:\.to\.#{CAPTURE_TS})?}.match(@full_basename)
+        @match_segments ||= %r{-(inc|full)\.#{CAPTURE_TS}(?:\.to\.#{CAPTURE_TS})?}.match(@manifest_name)
       end
 
-      def calculate_paths
-        name = Pathname(@full_basename).basename.to_s
+      def calculate_file_names
+        name = Pathname(@manifest_name).basename('.manifest').to_s
 
         [
-          @manifest_path,
+          @manifest_name,
           *@site.operations.glob(name + '*.difftar.gz')
         ]
       end
