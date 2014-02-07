@@ -82,8 +82,8 @@ module Triplicity
       end
 
       def asset_candidates
-        Pathname.glob(path + '*.manifest').map do |manifest_path|
-          Asset.new(self, manifest_path.basename.to_s)
+        operations.glob('*.manifest').map do |name|
+          Asset.new(self, name)
         end
       end
     end
