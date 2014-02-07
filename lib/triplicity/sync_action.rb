@@ -6,12 +6,12 @@ module Triplicity
 
     attr_reader :source_site, :target_site, :latest_target_timestamp
 
-    def initialize(source_site, target_site, max_space)
+    def initialize(source_site, target_site, max_space = nil)
       @source_site, @target_site = source_site, target_site
       @latest_target_timestamp = target_site.latest_timestamp
 
       # mutating state:
-      @remaining_space = max_space
+      @remaining_space = max_space || Float::INFINITY
       # @old_target_chains is mutating as well
     end
 
