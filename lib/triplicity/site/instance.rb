@@ -21,10 +21,6 @@ module Triplicity
         chains.map(&:latest_timestamp).max
       end
 
-      def empty?
-        chains.empty?
-      end
-
       class Operations
         def initialize(dir_path)
           @dir_path = dir_path
