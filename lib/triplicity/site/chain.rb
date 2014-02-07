@@ -17,10 +17,6 @@ module Triplicity
         new([])
       end
 
-      def has_asset_timestamp?(timestamp)
-        !!@assets.find { |asset| asset.timestamp == timestamp }
-      end
-
       # this can serve as an identifier
       def base_timestamp
         @assets.first.timestamp
