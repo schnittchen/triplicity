@@ -63,7 +63,7 @@ module Triplicity
       private
 
       def cache_ident_data
-        raise "unimplemented template method"
+        raise NotImplementedError
       end
     end
   end
