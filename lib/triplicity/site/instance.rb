@@ -11,6 +11,10 @@ module Triplicity
         @path = Pathname(path)
       end
 
+      def inspect
+        "<##{self.class.name} at #{path}>"
+      end
+
       class Operations
         def initialize(dir_path)
           @dir_path = dir_path

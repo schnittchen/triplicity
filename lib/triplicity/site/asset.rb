@@ -42,7 +42,7 @@ module Triplicity
       end
 
       def inspect
-        "##{self.class.name}: #{@manifest_name} of #{@site.inspect} >"
+        "#<#{self.class.name}: #{@manifest_name} of #{@site.inspect} >"
       end
 
       def remove
