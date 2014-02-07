@@ -31,7 +31,9 @@ module Triplicity
         end
 
         def glob(pattern)
-          Pathname.glob(@dir_path + pattern)
+          Pathname.glob(@dir_path + pattern).map do |p|
+            p.basename.to_s
+          end
         end
 
         def file_size(name)
