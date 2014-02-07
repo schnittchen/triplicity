@@ -1,5 +1,5 @@
 require 'triplicity/destination/base'
-require 'triplicity/site'
+require 'triplicity/site/local'
 require 'triplicity/sync_action'
 require 'triplicity/sync_thread'
 require 'triplicity/util/on_when'
@@ -108,7 +108,7 @@ module Triplicity
 
         path = Pathname(mountpoint) + @rel_path
         Dir.chdir(path) do
-          yield Site.from_path(path)
+          yield Site::Local.new(path)
         end
 
         true

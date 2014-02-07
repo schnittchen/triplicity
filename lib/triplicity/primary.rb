@@ -1,3 +1,4 @@
+require 'triplicity/site/local'
 require 'triplicity/util/on_when'
 
 module Triplicity
@@ -15,7 +16,7 @@ module Triplicity
     end
 
     def site
-      @site ||= Site.from_path(@path)
+      @site ||= Site::Local.new(@path)
     end
 
     def site_changed!

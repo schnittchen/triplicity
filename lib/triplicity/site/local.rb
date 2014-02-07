@@ -4,7 +4,7 @@ require 'pathname'
 
 module Triplicity
   module Site
-    class Instance < Base
+    class Local < Base
       attr_accessor :path
 
       def initialize(path)
