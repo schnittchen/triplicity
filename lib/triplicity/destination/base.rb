@@ -6,6 +6,11 @@ require 'triplicity/util/on_when'
 module Triplicity
   module Destination
     class Base
+      # An error during copy operation that has already been notified to the user
+      NotifiedOperationError = Class.new(RuntimeError)
+      # An error during copy operation that has not already been notified to the user.
+      # The user may be notified with the help of the exception message
+      UnnotifiedOperationError = Class.new(RuntimeError)
 
       class Subscription
         attr_reader :destination
@@ -95,15 +100,12 @@ module Triplicity
         error = false
 
         with_accessible_site do |site|
+          on_when.trigger_successful_connection(self)
+
+          action = SyncAction.new(@primary.site, site, @max_space)
           begin
-            on_when.trigger_successful_connection(self)
-
-            action = SyncAction.new(@primary.site, site, @max_space)
-            action.perform
-
-            timestamp = action.latest_target_timestamp
-            up_to_dateness.update_destination_timestamp(timestamp)
-          rescue => e
+            perform_action_with_timestamp_housekeeping(action)
+          rescue NotifiedOperationError, UnnotifiedOperationError
             error = e
           else
             performed = true
@@ -113,12 +115,29 @@ module Triplicity
         if performed
           on_when.trigger_successful_operation(self)
         elsif error
-          on_when.trigger_unsuccessful_operation(self)
+          on_when.trigger_unsuccessful_operation(self, error)
         else
           on_when.trigger_unsuccessful_connection(self)
         end
 
         on_when.trigger_ended_connection(self)
+      end
+
+      def perform_action_with_timestamp_housekeeping(action)
+        normalize_action_exceptions do
+          action.perform
+        end
+      ensure
+        timestamp = action.latest_target_timestamp
+        up_to_dateness.update_destination_timestamp(timestamp)
+      end
+
+      def normalize_action_exceptions
+        yield
+      rescue NotifiedOperationError, UnnotifiedOperationError
+        raise
+      rescue => e
+        raise UnnotifiedOperationError, e.message
       end
 
       def cache_ident_data
