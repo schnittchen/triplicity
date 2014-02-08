@@ -6,6 +6,30 @@ require 'triplicity/util/on_when'
 module Triplicity
   module Destination
     class Base
+
+      class Subscription
+        attr_reader :destination
+
+        def initialize(destination)
+          @destination = destination
+          @on_when = destination.on_when
+        end
+
+        def cache_ident
+          @destination.cache_ident
+        end
+      end
+
+      include OnWhen
+
+      on_when.delegates_subscriptions(Subscription)
+      on_when.event :beginning_connection
+      on_when.event :successful_connection
+      on_when.event :unsuccessful_connection
+      on_when.event :successful_operation
+      on_when.event :unsuccessful_operation
+      on_when.event :ended_connection
+
       class UpToDateness
         include OnWhen
 
@@ -48,8 +72,10 @@ module Triplicity
         end
       end
 
-      def initialize(application)
+      def initialize(primary, application)
+        @primary = primary
         @application = application
+        @on_when = on_when_new
       end
 
       def cache_ident
@@ -62,7 +88,36 @@ module Triplicity
 
       private
 
+      def attemt_to_copy
+        on_when.trigger_beginning_connection(self)
+        performed = false
+
+        with_accessible_site do |site|
+          performed = true
+
+          on_when.trigger_successful_connection(self)
+
+          action = SyncAction.new(@primary.site, site, @max_space)
+          action.perform
+
+          timestamp = action.latest_target_timestamp
+          up_to_dateness.update_destination_timestamp(timestamp)
+        end
+
+        if performed
+          on_when.trigger_successful_operation(self)
+        else
+          on_when.trigger_unsuccessful_connection(self)
+        end
+
+        on_when.trigger_ended_connection(self)
+      end
+
       def cache_ident_data
+        raise NotImplementedError
+      end
+
+      def with_accessible_site
         raise NotImplementedError
       end
     end
