@@ -27,15 +27,13 @@ module Triplicity
         DestinationHandle.new(destination).tap do |handle|
           handle.mutex = @mutex
           handle.plan = self
-        end
+        end.tap(&:issue_reminder)
       end
 
       @primary.on_change do
         propagate_primary_timestamp_to_destinations
       end
       propagate_primary_timestamp_to_destinations
-
-      issue_reminders # needed as soon as first_unsuccessful_attempt_time is persistent
     end
 
     attr_reader :destination_states, :application # XXX
@@ -69,6 +67,7 @@ module Triplicity
 
       def resume_notifications
         @mutex.synchronize { plan.destination_states[cache_ident][:reminders_suspended] = false }
+        issue_reminder
       end
 
       def notifications_suspended?
@@ -94,6 +93,27 @@ module Triplicity
       def notify_error(error)
         ## NYI
         # unless error.is_a?(Destination::Base::NotifiedOperationError)
+      end
+
+      def issue_reminder
+        message = @mutex.synchronize do
+          helper = NotificationHelper.new
+          hash = plan.destination_states[cache_ident]
+
+          next if notifications_suspended?
+
+          helper.for_time_data(*hash.values_at(:first_unsuccessful_attempt_time, :last_notification_time))
+
+          next unless helper.notification_due?
+
+          hash[:last_notification_time] = helper.reference
+          helper.message
+        end
+
+        plan.application.notifications.issue do |notification|
+          notification.summary = 'Please connect your secondary backup location'
+          notification.body = message
+        end if message
       end
 
       def issue_begin_copy_notification
@@ -149,32 +169,6 @@ module Triplicity
       end
     end
 
-    def issue_reminders
-      messages = []
-
-      mtx do
-        helper = NotificationHelper.new
-        @destination_states.each_pair do |ident, hash|
-          handle = handle_for_ident(ident)
-          next if handle.notifications_suspended?
-
-          helper.for_time_data(*hash.values_at(:first_unsuccessful_attempt_time, :last_notification_time))
-
-          next unless helper.notification_due?
-
-          messages << helper.message
-          hash[:last_notification_time] = helper.reference
-        end
-      end
-
-      messages.each do |message|
-        @application.notifications.issue do |notification|
-          notification.summary = 'Please connect your secondary backup location'
-          notification.body = message
-        end
-      end
-    end
-
     def subscribe_on_destination(subscription)
       ident = subscription.cache_ident
 
@@ -202,7 +196,6 @@ module Triplicity
 
       subscription.on_ended_connection do |destination|
         handle_for_destination(destination).resume_notifications
-        issue_reminders
       end
     end
 
