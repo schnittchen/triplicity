@@ -27,7 +27,7 @@ module Triplicity
       end
       propagate_primary_timestamp_to_destinations
 
-      schedule_reminders # needed as soon as first_unsuccessful_attempt_time is persistent
+      issue_reminders # needed as soon as first_unsuccessful_attempt_time is persistent
     end
 
     private
@@ -68,7 +68,7 @@ module Triplicity
       end
     end
 
-    def schedule_reminders
+    def issue_reminders
       messages = []
 
       mtx do
@@ -111,7 +111,6 @@ module Triplicity
           @destination_states[ident][:first_unsuccessful_attempt_time] ||= Time.now
           # @TODO save this in persistent storage instead
         end
-        schedule_reminders
       end
 
       subscription.on_successful_operation do |destination|
@@ -135,6 +134,7 @@ module Triplicity
         mtx {
           @destination_states[ident][:reminders_suspended] = false
         }
+        issue_reminders
       end
     end
 
