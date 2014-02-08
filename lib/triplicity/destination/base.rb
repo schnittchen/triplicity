@@ -129,7 +129,7 @@ module Triplicity
           action = SyncAction.new(@primary.site, site, @max_space)
           begin
             perform_action_with_timestamp_housekeeping(action)
-          rescue NotifiedOperationError, UnnotifiedOperationError
+          rescue NotifiedOperationError, UnnotifiedOperationError => e
             error = e
           else
             performed = true
