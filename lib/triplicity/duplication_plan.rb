@@ -12,8 +12,6 @@ module Triplicity
 
       @mutex = Mutex.new
 
-      @destination_states = Hash.new { |hash, ident| hash[ident] = {} }
-
       factory = Destination::Factory.new(primary, application)
       @destinations = extract_destination_options(options).map do |destination_options|
         factory.produce_for_options(destination_options) do |subscription|
@@ -22,8 +20,6 @@ module Triplicity
       end
 
       @destination_handles = @destinations.map do |destination|
-        @destination_states[destination.cache_ident]
-
         DestinationHandle.new(destination).tap do |handle|
           handle.mutex = @mutex
           handle.plan = self
@@ -36,7 +32,7 @@ module Triplicity
       propagate_primary_timestamp_to_destinations
     end
 
-    attr_reader :destination_states, :application # XXX
+    attr_reader :application # XXX
 
     private
 
@@ -49,11 +45,8 @@ module Triplicity
     end
 
     # earliest_failure_time should be cached
-    attributes = [
-      :destination,
-      # :reminders_suspended, :earliest_failure_time, :last_notification_time
-    ]
-    DestinationHandle = Struct.new(*attributes) do
+    DestinationHandle = Struct.new(:destination, :reminders_suspended,
+        :earliest_failure_time, :last_notification_time) do
       attr_accessor :mutex
       attr_accessor :plan
 
@@ -62,30 +55,30 @@ module Triplicity
       end
 
       def suspend_notifications
-        @mutex.synchronize { plan.destination_states[cache_ident][:reminders_suspended] = true }
+        @mutex.synchronize { @reminders_suspended = true }
       end
 
       def resume_notifications
-        @mutex.synchronize { plan.destination_states[cache_ident][:reminders_suspended] = false }
+        @mutex.synchronize { @reminders_suspended = false }
         issue_reminder
       end
 
       def notifications_suspended?
-        plan.destination_states[cache_ident][:reminders_suspended]
+        @reminders_suspended
       end
 
       def attempt_failed
         now = Time.now
         @mutex.synchronize {
           # save this in cache instead?
-          plan.destination_states[cache_ident][:first_unsuccessful_attempt_time] ||= now
+          @earliest_failure_time ||= now
         }
       end
 
       def notify_success
         @mutex.synchronize do
-          plan.destination_states[cache_ident].delete :first_unsuccessful_attempt_time
-          plan.destination_states[cache_ident].delete :last_notification_time
+          @earliest_failure_time = nil
+          @last_notification_time = nil
         end
         issue_end_copy_notification
       end
@@ -98,15 +91,14 @@ module Triplicity
       def issue_reminder
         message = @mutex.synchronize do
           helper = NotificationHelper.new
-          hash = plan.destination_states[cache_ident]
 
           next if notifications_suspended?
 
-          helper.for_time_data(*hash.values_at(:first_unsuccessful_attempt_time, :last_notification_time))
+          helper.for_time_data(@earliest_failure_time, @last_notification_time)
 
           next unless helper.notification_due?
 
-          hash[:last_notification_time] = helper.reference
+          @last_notification_time = helper.reference
           helper.message
         end
 
