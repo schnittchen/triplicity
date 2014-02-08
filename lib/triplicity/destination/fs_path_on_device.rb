@@ -1,50 +1,28 @@
 require 'triplicity/destination/base'
 require 'triplicity/site/local'
-require 'triplicity/sync_action'
-require 'triplicity/sync_thread'
-require 'triplicity/util/on_when'
-
-require 'thread'
 
 module Triplicity
   module Destination
     class FsPathOnDevice < Base
-      def initialize(options, primary, application)
-        super(primary, application)
-        @mutex = @on_when.mutex
-
-        @device_uuid = options['device_uuid']
-        @rel_path = options['rel_path']
-        @max_space = options['max_space']
-
-        @disk = @application.udisk2.disk_by_uuid(@device_uuid)
-        @disk.when_available do
-          thread.poke!
-        end
-
-        yield Subscription.new(self)
-
-        up_to_dateness.on_lost do
-          thread.poke!
-        end
-      end
-
       def human_name
         "target 1"
       end
 
       private
 
-      def cache_ident_data
-        [@device_uuid, @rel_path]
+      def initialize_destination(options)
+        @device_uuid = options['device_uuid']
+        @rel_path = options['rel_path']
+        @max_space = options['max_space']
+
+        @disk = @application.udisk2.disk_by_uuid(@device_uuid)
+        @disk.when_available do
+          maybe_ready_for_operation!
+        end
       end
 
-      def thread
-        @thread || @mutex.synchronize do
-          @thread ||= Triplicity::SyncThread
-            .performing { attemt_to_copy }
-            .whenever { ready_for_operation? }
-        end
+      def cache_ident_data
+        [@device_uuid, @rel_path]
       end
 
       def ready_for_operation?

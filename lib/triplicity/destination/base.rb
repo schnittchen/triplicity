@@ -2,6 +2,8 @@ require 'digest'
 require 'json'
 
 require 'triplicity/util/on_when'
+require 'triplicity/sync_action'
+require 'triplicity/sync_thread'
 
 module Triplicity
   module Destination
@@ -77,10 +79,19 @@ module Triplicity
         end
       end
 
-      def initialize(primary, application)
+      def initialize(options, primary, application)
         @primary = primary
         @application = application
         @on_when = on_when_new
+        @mutex = @on_when.mutex
+
+        yield Subscription.new(self)
+
+        up_to_dateness.on_lost do
+          maybe_ready_for_operation!
+        end
+
+        initialize_destination(options)
       end
 
       def cache_ident
@@ -92,6 +103,18 @@ module Triplicity
       end
 
       private
+
+      def maybe_ready_for_operation!
+        thread.poke! if ready_for_operation?
+      end
+
+      def thread
+        @thread || @mutex.synchronize do
+          @thread ||= Triplicity::SyncThread
+            .performing { attemt_to_copy }
+            .whenever { ready_for_operation? }
+        end
+      end
 
       def attemt_to_copy
         on_when.trigger_beginning_connection(self)
@@ -140,11 +163,20 @@ module Triplicity
         raise UnnotifiedOperationError, e.message
       end
 
+      def ready_for_operation?
+        # XXX if there was an error, this means we will try again and again without waiting
+        !up_to_dateness.given?
+      end
+
       def cache_ident_data
         raise NotImplementedError
       end
 
       def with_accessible_site
+        raise NotImplementedError
+      end
+
+      def initialize_destination(options)
         raise NotImplementedError
       end
     end
