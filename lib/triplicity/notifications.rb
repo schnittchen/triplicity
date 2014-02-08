@@ -8,7 +8,8 @@ module Triplicity
       attr_accessor :app_name, :icon, :summary, :body, :buttons, :hints, :timeout
       attr_reader :id
 
-      def initialize(interface)
+      def initialize(reactor, interface)
+        @reactor = reactor
         @interface = interface
         default_expire!
         if block_given?
@@ -36,7 +37,9 @@ module Triplicity
         hints = self.hints || {}
         replaces_id = @id || 0
 
-        result = @interface.Notify(app_name, replaces_id, icon, summary, body, buttons, hints, timeout)
+        result = @reactor.on_dbus_thread do
+          @interface.Notify(app_name, replaces_id, icon, summary, body, buttons, hints, timeout)
+        end
         @id = result.first
 
         self
@@ -44,28 +47,25 @@ module Triplicity
     end
 
     def issue
-      Notification.new(interface) do |notification|
+      Notification.new(@reactor, @interface) do |notification|
         notification.app_name = @app_name if @app_name
         yield notification
       end
     end
 
-    def initialize(session_bus)
-      @session_bus = session_bus
+    def initialize(reactor, session_bus)
+      @reactor = reactor
+      @interface = obtain_interface(session_bus)
     end
 
     private
 
-    def interface
-      object['org.freedesktop.Notifications']
-    end
-
-    def object
-      service.object('/org/freedesktop/Notifications').tap(&:introspect)
-    end
-
-    def service
-      @session_bus["org.freedesktop.Notifications"]
+    def obtain_interface(session_bus)
+      @reactor.on_dbus_thread do
+        service = session_bus["org.freedesktop.Notifications"]
+        object = service.object('/org/freedesktop/Notifications').tap(&:introspect)
+        object['org.freedesktop.Notifications']
+      end
     end
   end
 end

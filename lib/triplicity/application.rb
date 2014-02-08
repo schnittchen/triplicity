@@ -28,7 +28,7 @@ module Triplicity
       Reactor.new(@dbus_loop_wrapper) do |reactor|
         @reactor = reactor
 
-        @notifications = Notifications.new(session_bus)
+        @notifications = Notifications.new(@reactor, session_bus)
 
         setup
       end
