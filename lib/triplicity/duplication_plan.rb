@@ -23,6 +23,7 @@ module Triplicity
         DestinationHandle.new(destination).tap do |handle|
           handle.mutex = @mutex
           handle.plan = self
+          handle.application = @application
         end.tap(&:issue_reminder)
       end
 
@@ -31,8 +32,6 @@ module Triplicity
       end
       propagate_primary_timestamp_to_destinations
     end
-
-    attr_reader :application # XXX
 
     private
 
@@ -48,7 +47,7 @@ module Triplicity
     DestinationHandle = Struct.new(:destination, :reminders_suspended,
         :earliest_failure_time, :last_notification_time) do
       attr_accessor :mutex
-      attr_accessor :plan
+      attr_accessor :plan, :application
 
       def cache_ident
         destination.cache_ident
@@ -102,14 +101,14 @@ module Triplicity
           helper.message
         end
 
-        plan.application.notifications.issue do |notification|
+        application.notifications.issue do |notification|
           notification.summary = 'Please connect your secondary backup location'
           notification.body = message
         end if message
       end
 
       def issue_begin_copy_notification
-        @copy_notification = plan.application.notifications.issue do |n|
+        @copy_notification = application.notifications.issue do |n|
           n.summary = "Beginning to copy a plan's backup"
           n.body = "Copying source to #{destination.human_name}"
         end
