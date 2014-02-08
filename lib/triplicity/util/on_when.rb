@@ -9,12 +9,21 @@ module OnWhen
   include HasInstanceHandle
 
   class ClassHandle
-    def instance_handle_class
-      @instance_handle_class ||= Class.new(InstanceHandleBase)
-    end
+    attr_reader :instance_handle_class, :names, :subscription_delegate_module
 
-    def names
-      @names ||= []
+    def initialize(kls)
+      if kls.superclass < OnWhen
+        superclass_handle = kls.superclass.on_when
+        @instance_handle_class = Class.new(superclass_handle.instance_handle_class)
+        @names = superclass_handle.names.dup
+        @subscription_delegate_module = Module.new.tap do |mod|
+          mod.include superclass_handle.subscription_delegate_module
+        end
+      else
+        @instance_handle_class = Class.new(InstanceHandleBase)
+        @names = []
+        @subscription_delegate_module = Module.new
+      end
     end
 
     def event(name)
@@ -80,12 +89,6 @@ module OnWhen
       klass.include subscription_delegate_module
       klass.include HasInstanceHandle
     end
-
-    private
-
-    def subscription_delegate_module
-      @subscription_delegate_module ||= Module.new
-    end
   end
 
   class InstanceHandleBase
@@ -106,7 +109,7 @@ module OnWhen
 
   module ClassMethods
     def on_when
-      @on_when ||= ClassHandle.new
+      @on_when ||= ClassHandle.new(self)
     end
   end
 
