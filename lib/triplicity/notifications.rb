@@ -50,7 +50,7 @@ module Triplicity
       end
     end
 
-    def initialize(session_bus = DBus.session_bus)
+    def initialize(session_bus)
       @session_bus = session_bus
     end
 
