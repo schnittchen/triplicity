@@ -3,7 +3,7 @@ require 'triplicity/reactor'
 
 module Triplicity
   class Application
-    attr_reader :dbus_busses, :reactor
+    attr_reader :dbus_busses, :reactor, :notifications
 
     def self.start
       send(:new).setup_and_run
@@ -27,6 +27,8 @@ module Triplicity
       @dbus_loop_wrapper = Triplicity::DbusLoopWrapper.new
       Reactor.new(@dbus_loop_wrapper) do |reactor|
         @reactor = reactor
+
+        @notifications = Notifications.new(session_bus)
 
         setup
       end
