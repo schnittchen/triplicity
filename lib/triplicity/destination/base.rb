@@ -90,22 +90,30 @@ module Triplicity
 
       def attemt_to_copy
         on_when.trigger_beginning_connection(self)
+
         performed = false
+        error = false
 
         with_accessible_site do |site|
-          performed = true
+          begin
+            on_when.trigger_successful_connection(self)
 
-          on_when.trigger_successful_connection(self)
+            action = SyncAction.new(@primary.site, site, @max_space)
+            action.perform
 
-          action = SyncAction.new(@primary.site, site, @max_space)
-          action.perform
-
-          timestamp = action.latest_target_timestamp
-          up_to_dateness.update_destination_timestamp(timestamp)
+            timestamp = action.latest_target_timestamp
+            up_to_dateness.update_destination_timestamp(timestamp)
+          rescue => e
+            error = e
+          else
+            performed = true
+          end
         end
 
         if performed
           on_when.trigger_successful_operation(self)
+        elsif error
+          on_when.trigger_unsuccessful_operation(self)
         else
           on_when.trigger_unsuccessful_connection(self)
         end
