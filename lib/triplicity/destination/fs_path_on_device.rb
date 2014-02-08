@@ -26,8 +26,7 @@ module Triplicity
       end
 
       def ready_for_operation?
-        # XXX if there was an error, this means we will try again and again without waiting
-        !up_to_dateness.given? and @disk.available?
+        super and @disk.available?
       end
 
       def with_accessible_site
