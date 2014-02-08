@@ -89,16 +89,12 @@ module Triplicity
 
       def issue_reminder
         message = @mutex.synchronize do
-          helper = NotificationHelper.new
-
           next if notifications_suspended?
 
-          helper.for_time_data(@earliest_failure_time, @last_notification_time)
-
-          next unless helper.notification_due?
-
-          @last_notification_time = helper.reference
-          helper.message
+          reference = Time.now
+          next unless notification_due?(reference)
+          @last_notification_time = reference
+          reminder_message(reference)
         end
 
         application.notifications.issue do |notification|
@@ -122,41 +118,27 @@ module Triplicity
           notification.body = "Copied source to #{destination.human_name}"
         end
       end
+
+      def notification_due?(reference)
+        @earliest_failure_time && # was there a failed attempt so far?
+          reference - @earliest_failure_time >= 17 && # long enough ago?
+          last_notification_long_ago?(reference)
+      end
+
+      def last_notification_long_ago?(reference)
+        !@last_notification_time || reference - @last_notification_time > 8
+      end
+
+      def reminder_message(reference)
+        # @TODO @earliest_failure_time is misleading
+        "Bad Backup Karma since #{reference - @earliest_failure_time} seconds"
+      end
     end
 
     def propagate_primary_timestamp_to_destinations
       timestamp = @primary.site.latest_timestamp
       @destinations.each do |destination|
         destination.up_to_dateness.primary_timestamp_changed timestamp
-      end
-    end
-
-    class NotificationHelper
-      attr_reader :reference
-
-      def initialize
-        @reference = Time.now
-      end
-
-      def for_time_data(fuat, lnt)
-        @since = fuat
-        @lnt = lnt
-      end
-
-      def notification_due?
-        @since && # was there even an attempt so far?
-          @reference - @since >= 17 && # long enough ago?
-          last_notification_long_ago?
-      end
-
-      def message
-        "Bad Backup Karma since #{@reference - @since} seconds"
-      end
-
-      private
-
-      def last_notification_long_ago?
-        !@lnt || @reference - @lnt > 8
       end
     end
 
