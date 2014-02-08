@@ -10,9 +10,11 @@ module Triplicity
         hash[uuid] = create_disk_handle(uuid)
       end
 
-      udisk2_service = @application.system_bus["org.freedesktop.UDisks2"]
-      udisk = udisk2_service.object('/org/freedesktop/UDisks2').tap(&:introspect)
-      @object_manager_interface = udisk['org.freedesktop.DBus.ObjectManager']
+      @object_manager_interface = @application.reactor.on_dbus_thread do
+        udisk2_service = @application.system_bus["org.freedesktop.UDisks2"]
+        udisk = udisk2_service.object('/org/freedesktop/UDisks2').tap(&:introspect)
+        udisk['org.freedesktop.DBus.ObjectManager']
+      end
     end
 
     def kick_off
