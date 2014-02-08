@@ -82,6 +82,7 @@ module Triplicity
       def initialize(options, primary, application)
         @primary = primary
         @application = application
+        @retry_trigger = nil
         @on_when = on_when_new
         @mutex = @on_when.mutex
 
@@ -139,6 +140,7 @@ module Triplicity
           on_when.trigger_successful_operation(self)
         elsif error
           on_when.trigger_unsuccessful_operation(self, error)
+          schedule_retry
         else
           on_when.trigger_unsuccessful_connection(self)
         end
@@ -164,8 +166,18 @@ module Triplicity
       end
 
       def ready_for_operation?
-        # XXX if there was an error, this means we will try again and again without waiting
-        !up_to_dateness.given?
+        !up_to_dateness.given? && !retry_pending?
+      end
+
+      def schedule_retry
+        @retry_trigger = @application.reactor.schedule_in(12) do
+          @retry_trigger = nil
+          maybe_ready_for_operation!
+        end
+      end
+
+      def retry_pending?
+        @retry_trigger
       end
 
       def cache_ident_data
