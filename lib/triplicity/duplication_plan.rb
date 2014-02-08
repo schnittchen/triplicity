@@ -12,7 +12,6 @@ module Triplicity
 
       @mutex = Mutex.new
 
-      @destination_notifications = {}
       @destination_states = Hash.new { |hash, ident| hash[ident] = {} }
 
       factory = Destination::Factory.new(primary, application)
@@ -39,7 +38,7 @@ module Triplicity
       issue_reminders # needed as soon as first_unsuccessful_attempt_time is persistent
     end
 
-    attr_reader :destination_states, :destination_notifications, :application # XXX
+    attr_reader :destination_states, :application # XXX
 
     private
 
@@ -98,18 +97,16 @@ module Triplicity
       end
 
       def issue_begin_copy_notification
-        notification = plan.application.notifications.issue do |n|
+        @copy_notification = plan.application.notifications.issue do |n|
           n.summary = "Beginning to copy a plan's backup"
           n.body = "Copying source to #{destination.human_name}"
         end
-
-        plan.destination_notifications[cache_ident] = notification
       end
 
       private
 
       def issue_end_copy_notification
-        plan.destination_notifications[cache_ident].issue do |notification|
+        @copy_notification.issue do |notification|
           notification.summary = "Finished copying a plan's backup"
           notification.body = "Copied source to #{destination.human_name}"
         end
