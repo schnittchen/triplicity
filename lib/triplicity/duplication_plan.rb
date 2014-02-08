@@ -88,7 +88,7 @@ module Triplicity
 
       messages.each do |message|
         @application.notifications.issue do |notification|
-          notification.subject = 'Please connect your secondary backup location'
+          notification.summary = 'Please connect your secondary backup location'
           notification.body = message
         end
       end
