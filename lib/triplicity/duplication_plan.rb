@@ -53,6 +53,10 @@ module Triplicity
         destination.cache_ident
       end
 
+      def new_primary_timestamp(timestamp)
+        destination.up_to_dateness.primary_timestamp_changed timestamp
+      end
+
       def suspend_notifications
         @mutex.synchronize { @reminders_suspended = true }
       end
@@ -137,8 +141,8 @@ module Triplicity
 
     def propagate_primary_timestamp_to_destinations
       timestamp = @primary.site.latest_timestamp
-      @destinations.each do |destination|
-        destination.up_to_dateness.primary_timestamp_changed timestamp
+      @destination_handles.each do |handle|
+        handle.new_primary_timestamp(timestamp)
       end
     end
 
