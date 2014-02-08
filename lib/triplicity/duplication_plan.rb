@@ -22,6 +22,15 @@ module Triplicity
         end
       end
 
+      @destination_handles = @destinations.map do |destination|
+        @destination_states[destination.cache_ident]
+
+        DestinationHandle.new(destination).tap do |handle|
+          handle.mutex = @mutex
+          handle.plan = self
+        end
+      end
+
       @primary.on_change do
         propagate_primary_timestamp_to_destinations
       end
@@ -30,7 +39,82 @@ module Triplicity
       issue_reminders # needed as soon as first_unsuccessful_attempt_time is persistent
     end
 
+    attr_reader :destination_states, :destination_notifications, :application # XXX
+
     private
+
+    def handle_for_destination(destination)
+      @destination_handles.find { |handle| handle.destination.equal? destination }
+    end
+
+    def handle_for_ident(ident)
+      @destination_handles.find { |handle| handle.destination.cache_ident == ident }
+    end
+
+    # earliest_failure_time should be cached
+    attributes = [
+      :destination,
+      # :reminders_suspended, :earliest_failure_time, :last_notification_time
+    ]
+    DestinationHandle = Struct.new(*attributes) do
+      attr_accessor :mutex
+      attr_accessor :plan
+
+      def cache_ident
+        destination.cache_ident
+      end
+
+      def suspend_notifications
+        @mutex.synchronize { plan.destination_states[cache_ident][:reminders_suspended] = true }
+      end
+
+      def resume_notifications
+        @mutex.synchronize { plan.destination_states[cache_ident][:reminders_suspended] = false }
+      end
+
+      def notifications_suspended?
+        plan.destination_states[cache_ident][:reminders_suspended]
+      end
+
+      def attempt_failed
+        now = Time.now
+        @mutex.synchronize {
+          # save this in cache instead?
+          plan.destination_states[cache_ident][:first_unsuccessful_attempt_time] ||= now
+        }
+      end
+
+      def notify_success
+        @mutex.synchronize do
+          plan.destination_states[cache_ident].delete :first_unsuccessful_attempt_time
+          plan.destination_states[cache_ident].delete :last_notification_time
+        end
+        issue_end_copy_notification
+      end
+
+      def notify_error(error)
+        ## NYI
+        # unless error.is_a?(Destination::Base::NotifiedOperationError)
+      end
+
+      def issue_begin_copy_notification
+        notification = plan.application.notifications.issue do |n|
+          n.summary = "Beginning to copy a plan's backup"
+          n.body = "Copying source to #{destination.human_name}"
+        end
+
+        plan.destination_notifications[cache_ident] = notification
+      end
+
+      private
+
+      def issue_end_copy_notification
+        plan.destination_notifications[cache_ident].issue do |notification|
+          notification.summary = "Finished copying a plan's backup"
+          notification.body = "Copied source to #{destination.human_name}"
+        end
+      end
+    end
 
     def propagate_primary_timestamp_to_destinations
       timestamp = @primary.site.latest_timestamp
@@ -73,9 +157,9 @@ module Triplicity
 
       mtx do
         helper = NotificationHelper.new
-
         @destination_states.each_pair do |ident, hash|
-          next if hash[:reminders_suspended]
+          handle = handle_for_ident(ident)
+          next if handle.notifications_suspended?
 
           helper.for_time_data(*hash.values_at(:first_unsuccessful_attempt_time, :last_notification_time))
 
@@ -98,64 +182,35 @@ module Triplicity
       ident = subscription.cache_ident
 
       subscription.on_beginning_connection do |destination|
-        mtx { @destination_states[ident][:reminders_suspended] = true }
+        handle_for_destination(destination).suspend_notifications
       end
 
       subscription.on_successful_connection do |destination|
-        issue_begin_copy_notification(destination)
+        handle_for_destination(destination).issue_begin_copy_notification
       end
 
       subscription.on_unsuccessful_connection do |destination|
-        mtx do
-          # destination has decided copying is needed, but could not connect
-          @destination_states[ident][:first_unsuccessful_attempt_time] ||= Time.now
-          # @TODO save this in persistent storage instead
-        end
+        handle_for_destination(destination).attempt_failed
       end
 
       subscription.on_successful_operation do |destination|
-        mtx do
-          @destination_states[ident].delete :first_unsuccessful_attempt_time
-          @destination_states[ident].delete :last_notification_time
-        end
-        issue_end_copy_notification(destination)
+        handle_for_destination(destination).notify_success
       end
 
       subscription.on_unsuccessful_operation do |destination, error|
-        # @FIXME error will be [Un]NotifiedOperationError
-        # we assume the user has already notified appropriately. @FiXME this may totally not be true
-        mtx do
-          @destination_states[ident][:first_unsuccessful_attempt_time] ||= Time.now
-          # @TODO save this in persistent storage instead
-        end
+        handle = handle_for_destination(destination)
+        handle.attempt_failed
+        handle.notify_error(error)
       end
 
       subscription.on_ended_connection do |destination|
-        mtx {
-          @destination_states[ident][:reminders_suspended] = false
-        }
+        handle_for_destination(destination).resume_notifications
         issue_reminders
       end
     end
 
     def extract_destination_options(options)
       options[:destinations]
-    end
-
-    def issue_begin_copy_notification(destination)
-      notification = @application.notifications.issue do |n|
-        n.summary = "Beginning to copy a plan's backup"
-        n.body = "Copying source to #{destination.human_name}"
-      end
-
-      @destination_notifications[destination.cache_ident] = notification
-    end
-
-    def issue_end_copy_notification(destination)
-      @destination_notifications[destination.cache_ident].issue do |notification|
-        notification.summary = "Finished copying a plan's backup"
-        notification.body = "Copied source to #{destination.human_name}"
-      end
     end
 
     def mtx
