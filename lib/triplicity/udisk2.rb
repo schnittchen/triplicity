@@ -1,3 +1,5 @@
+require 'triplicity/util/on_when'
+
 module Triplicity
   class Udisk2
     # a disk may initially falsely reported as not connected, until shortly after the status is updated.
