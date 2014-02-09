@@ -42,9 +42,7 @@ module Triplicity
       @destination_handles.find { |handle| handle.destination.cache_ident == ident }
     end
 
-    # earliest_failure_time should be cached
-    DestinationHandle = Struct.new(:destination, :reminders_suspended,
-        :earliest_failure_time, :last_notification_time) do
+    DestinationHandle = Struct.new(:destination) do
       attr_accessor :mutex
       attr_accessor :plan, :application
 
