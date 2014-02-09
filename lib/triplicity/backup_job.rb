@@ -1,4 +1,4 @@
-require 'triplicity/sync_thread'
+require 'triplicity/looping_thread'
 
 require 'time' # for Time.parse
 
@@ -19,7 +19,7 @@ module Triplicity
 
       prepare_spawn_args(config)
 
-      @thread = SyncThread.performing { work }.whenever { work_to_do? }
+      @thread = LoopingThread.performing { work }.whenever { work_to_do? }
     end
 
     private

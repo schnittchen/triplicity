@@ -1,7 +1,7 @@
 require 'triplicity/util/on_when'
 require 'triplicity/util/has_cache'
 require 'triplicity/sync_action'
-require 'triplicity/sync_thread'
+require 'triplicity/looping_thread'
 
 module Triplicity
   module Destination
@@ -106,7 +106,7 @@ module Triplicity
 
       def thread
         @thread || @mutex.synchronize do
-          @thread ||= Triplicity::SyncThread
+          @thread ||= LoopingThread
             .performing { attemt_to_copy }
             .whenever { ready_for_operation? }
         end

@@ -1,7 +1,7 @@
 require 'thread'
 
 module Triplicity
-  class SyncThread < Thread
+  class LoopingThread < Thread
     class DslTarget
       def initialize(&constructor)
         @constructor = constructor
