@@ -17,7 +17,7 @@ module Triplicity
       @destination_handles = extract_destination_options(options).map do |destination_options|
         handle = DestinationHandle.new(self, @application, @mutex)
         handle.destination = factory.produce_for_options(destination_options) do |subscription|
-          subscribe_on_destination(subscription) # I would like to pass the handle here
+          subscribe_on_destination(subscription, handle)
         end
 
         handle.issue_reminder
@@ -31,14 +31,6 @@ module Triplicity
     end
 
     private
-
-    def handle_for_destination(destination)
-      @destination_handles.find { |handle| handle.destination.equal? destination }
-    end
-
-    def handle_for_ident(ident)
-      @destination_handles.find { |handle| handle.destination.cache_ident == ident }
-    end
 
     class DestinationHandle
       def initialize(plan, application, mutex)
@@ -145,34 +137,31 @@ module Triplicity
       end
     end
 
-    def subscribe_on_destination(subscription)
-      ident = subscription.cache_ident
-
+    def subscribe_on_destination(subscription, handle)
       subscription.on_beginning_connection do |destination|
-        handle_for_destination(destination).suspend_notifications
+        handle.suspend_notifications
       end
 
       subscription.on_successful_connection do |destination|
-        handle_for_destination(destination).issue_begin_copy_notification
+        handle.issue_begin_copy_notification
       end
 
       subscription.on_unsuccessful_connection do |destination|
-        handle_for_destination(destination).attempt_failed
+        handle.attempt_failed
       end
 
       subscription.on_successful_operation do |destination|
-        handle_for_destination(destination).notify_success
-        handle_for_destination(destination).issue_end_copy_notification
+        handle.notify_success
+        handle.issue_end_copy_notification
       end
 
       subscription.on_unsuccessful_operation do |destination, error|
-        handle = handle_for_destination(destination)
         handle.attempt_failed
         handle.notify_error(error)
       end
 
       subscription.on_ended_connection do |destination|
-        handle_for_destination(destination).resume_notifications
+        handle.resume_notifications
       end
     end
 
