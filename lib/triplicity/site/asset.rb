@@ -76,11 +76,11 @@ module Triplicity
       end
 
       def calculate_file_names
-        name = Pathname(@manifest_name).basename('.manifest').to_s
+        name = Pathname(@manifest_name).basename('.manifest').basename('.manifest.gpg').to_s
 
         [
           @manifest_name,
-          *@site.operations.glob(name + '*.difftar.gz')
+          *@site.operations.glob(name + '*.difftar.*')
         ]
       end
     end

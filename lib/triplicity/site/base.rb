@@ -41,7 +41,7 @@ module Triplicity
       end
 
       def asset_candidates
-        operations.glob('*.manifest').map do |name|
+        operations.glob('*.manifest*').map do |name|
           Asset.new(self, name)
         end
       end
