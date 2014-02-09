@@ -179,9 +179,5 @@ module Triplicity
     def extract_destination_options(options)
       options[:destinations]
     end
-
-    def mtx
-      @mutex.synchronize(&Proc.new)
-    end
   end
 end
