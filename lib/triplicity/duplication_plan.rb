@@ -13,13 +13,12 @@ module Triplicity
       @mutex = Mutex.new
 
       factory = Destination::Factory.new(primary, application)
-      @destinations = extract_destination_options(options).map do |destination_options|
-        factory.produce_for_options(destination_options) do |subscription|
+
+      @destination_handles = extract_destination_options(options).map do |destination_options|
+        destination = factory.produce_for_options(destination_options) do |subscription|
           subscribe_on_destination(subscription)
         end
-      end
 
-      @destination_handles = @destinations.map do |destination|
         DestinationHandle.new(destination).tap do |handle|
           handle.mutex = @mutex
           handle.plan = self
