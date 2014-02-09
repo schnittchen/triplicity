@@ -11,7 +11,7 @@ module Triplicity
       if target_path.exist?
         load
       else
-        @data = { schema: SCHEMA_VERSION }
+        @data = pristine_data
         dump
       end
     end
@@ -46,7 +46,16 @@ module Triplicity
     end
 
     def load
-      @data = Marshal.load(target_path.read)
+      data = Marshal.load(target_path.read)
+      if data[:schema] == SCHEMA_VERSION
+        @data = data
+      else
+        @data = pristine_data
+      end
+    end
+
+    def pristine_data
+      { schema: SCHEMA_VERSION }
     end
 
     def dump
