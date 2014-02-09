@@ -82,7 +82,6 @@ module Triplicity
           @earliest_failure_time = nil
           @last_notification_time = nil
         end
-        issue_end_copy_notification
       end
 
       def notify_error(error)
@@ -113,14 +112,14 @@ module Triplicity
         end
       end
 
-      private
-
       def issue_end_copy_notification
         @copy_notification.issue do |notification|
           notification.summary = "Finished copying a plan's backup"
           notification.body = "Copied source to #{destination.human_name}"
         end
       end
+
+      private
 
       def notification_due?(reference)
         @earliest_failure_time && # was there a failed attempt so far?
@@ -162,6 +161,7 @@ module Triplicity
 
       subscription.on_successful_operation do |destination|
         handle_for_destination(destination).notify_success
+        handle_for_destination(destination).issue_end_copy_notification
       end
 
       subscription.on_unsuccessful_operation do |destination, error|
