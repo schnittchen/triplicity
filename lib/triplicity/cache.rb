@@ -2,7 +2,7 @@ require 'etc'
 require 'pathname'
 
 module Triplicity
-  class State
+  class Cache
     SCHEMA_VERSION = 0
 
     def initialize(basename)

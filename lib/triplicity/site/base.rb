@@ -1,4 +1,4 @@
-require 'triplicity/sorting'
+require 'triplicity/util/sorting'
 require 'triplicity/site/asset'
 require 'triplicity/site/chain'
 
@@ -19,7 +19,7 @@ module Triplicity
 
       private
 
-      include Sorting
+      include Util::Sorting
 
       def calculate_chains
         oldest_first(asset_candidates).slice_before(&:full?).map do |assets|

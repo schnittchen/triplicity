@@ -1,9 +1,9 @@
-require 'triplicity/sorting'
+require 'triplicity/util/sorting'
 
 module Triplicity
   module Site
     class Chain
-      include Sorting
+      include Util::Sorting
 
       def initialize(assets)
         @assets = oldest_first(assets)

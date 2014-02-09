@@ -1,8 +1,8 @@
-require 'triplicity/sorting'
+require 'triplicity/util/sorting'
 
 module Triplicity
   class SyncAction
-    include Sorting
+    include Util::Sorting
 
     attr_reader :source_site, :target_site, :latest_target_timestamp
 
