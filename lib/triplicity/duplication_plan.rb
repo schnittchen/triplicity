@@ -16,13 +16,11 @@ module Triplicity
 
       @destination_handles = extract_destination_options(options).map do |destination_options|
         destination = factory.produce_for_options(destination_options) do |subscription|
-          subscribe_on_destination(subscription)
+          subscribe_on_destination(subscription) # I would like to pass the handle here
         end
 
-        DestinationHandle.new(destination).tap do |handle|
-          handle.mutex = @mutex
-          handle.plan = self
-          handle.application = @application
+        DestinationHandle.new(self, @application, @mutex).tap do |handle|
+          handle.destination = destination
         end.tap(&:issue_reminder)
       end
 
@@ -42,9 +40,12 @@ module Triplicity
       @destination_handles.find { |handle| handle.destination.cache_ident == ident }
     end
 
-    DestinationHandle = Struct.new(:destination) do
-      attr_accessor :mutex
-      attr_accessor :plan, :application
+    class DestinationHandle
+      def initialize(plan, application, mutex)
+        @plan, @application, @mutex = plan, application, mutex
+      end
+
+      attr_accessor :destination
 
       def cache_ident
         destination.cache_ident
@@ -118,6 +119,8 @@ module Triplicity
       end
 
       private
+
+      attr_reader :plan, :application
 
       def notification_due?(reference)
         @earliest_failure_time && # was there a failed attempt so far?
