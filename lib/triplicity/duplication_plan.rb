@@ -15,13 +15,13 @@ module Triplicity
       factory = Destination::Factory.new(primary, application)
 
       @destination_handles = extract_destination_options(options).map do |destination_options|
-        destination = factory.produce_for_options(destination_options) do |subscription|
+        handle = DestinationHandle.new(self, @application, @mutex)
+        handle.destination = factory.produce_for_options(destination_options) do |subscription|
           subscribe_on_destination(subscription) # I would like to pass the handle here
         end
 
-        DestinationHandle.new(self, @application, @mutex).tap do |handle|
-          handle.destination = destination
-        end.tap(&:issue_reminder)
+        handle.issue_reminder
+        handle
       end
 
       @primary.on_change do
