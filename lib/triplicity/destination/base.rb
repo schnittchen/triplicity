@@ -1,7 +1,5 @@
-require 'digest'
-require 'json'
-
 require 'triplicity/util/on_when'
+require 'triplicity/util/has_cache'
 require 'triplicity/sync_action'
 require 'triplicity/sync_thread'
 
@@ -27,6 +25,7 @@ module Triplicity
         end
       end
 
+      include Util::HasCache
       include OnWhen
 
       on_when.delegates_subscriptions(Subscription)
@@ -93,10 +92,6 @@ module Triplicity
         end
 
         initialize_destination(options)
-      end
-
-      def cache_ident
-        @cache_ident ||= Digest::SHA256.digest(cache_ident_data.to_json)
       end
 
       def up_to_dateness
@@ -178,10 +173,6 @@ module Triplicity
 
       def retry_pending?
         @retry_trigger
-      end
-
-      def cache_ident_data
-        raise NotImplementedError
       end
 
       def with_accessible_site
