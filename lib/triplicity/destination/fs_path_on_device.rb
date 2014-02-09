@@ -1,3 +1,14 @@
+#
+# fs_path_on_device.rb - a backup duplication target residing on a local filesystem
+#
+# Copyright (C) 2014 Thomas Stratmann <thomas.stratmann@rub.de>
+# All rights reserved.
+# This is free software with ABSOLUTELY NO WARRANTY.
+#
+# You can redistribute it and/or modify it under the terms of
+# the GNU General Public License version 2.
+#
+
 require 'triplicity/destination/base'
 require 'triplicity/site/local'
 

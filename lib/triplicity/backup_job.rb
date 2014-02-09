@@ -1,3 +1,14 @@
+#
+# backup_job.rb - regularly spawns subshell and handles success or failure
+#
+# Copyright (C) 2014 Thomas Stratmann <thomas.stratmann@rub.de>
+# All rights reserved.
+# This is free software with ABSOLUTELY NO WARRANTY.
+#
+# You can redistribute it and/or modify it under the terms of
+# the GNU General Public License version 2.
+#
+
 require 'triplicity/looping_thread'
 
 require 'time' # for Time.parse

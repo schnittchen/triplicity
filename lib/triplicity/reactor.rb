@@ -1,3 +1,14 @@
+#
+# reactor.rb - main loop integrating DBus I/O
+#
+# Copyright (C) 2014 Thomas Stratmann <thomas.stratmann@rub.de>
+# All rights reserved.
+# This is free software with ABSOLUTELY NO WARRANTY.
+#
+# You can redistribute it and/or modify it under the terms of
+# the GNU General Public License version 2.
+#
+
 module Triplicity
   class Reactor
     def initialize(dbus_loop_wrapper)

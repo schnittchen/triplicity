@@ -1,3 +1,14 @@
+#
+# duplication_plan.rb - links a primary to one or more destinations, issues reminders
+#
+# Copyright (C) 2014 Thomas Stratmann <thomas.stratmann@rub.de>
+# All rights reserved.
+# This is free software with ABSOLUTELY NO WARRANTY.
+#
+# You can redistribute it and/or modify it under the terms of
+# the GNU General Public License version 2.
+#
+
 require 'thread'
 
 require 'triplicity/destination/factory'
