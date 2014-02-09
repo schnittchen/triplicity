@@ -62,7 +62,7 @@ module Triplicity
       old_target_chains.replace keep # bookkeeping
 
       chain.upload_to @target_site
-      @latest_target_timestamp = [chain.latest_timestamp, @latest_target_timestamp].max
+      @latest_target_timestamp = [chain.latest_timestamp, @latest_target_timestamp].compact.max
     end
 
     def truncate_scenarios(chains)
