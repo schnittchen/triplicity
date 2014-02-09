@@ -90,14 +90,14 @@ module Triplicity
           reminder_message(reference)
         end
 
-        application.notifications.issue do |notification|
+        @application.notifications.issue do |notification|
           notification.summary = 'Please connect your secondary backup location'
           notification.body = message
         end if message
       end
 
       def issue_begin_copy_notification
-        @copy_notification = application.notifications.issue do |n|
+        @copy_notification = @application.notifications.issue do |n|
           n.summary = "Beginning to copy a plan's backup"
           n.body = "Copying source to #{destination.human_name}"
         end
@@ -111,8 +111,6 @@ module Triplicity
       end
 
       private
-
-      attr_reader :plan, :application
 
       def notification_due?(reference)
         @earliest_failure_time && # was there a failed attempt so far?
