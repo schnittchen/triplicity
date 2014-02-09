@@ -1,9 +1,12 @@
 require 'triplicity/dbus_loop_wrapper'
 require 'triplicity/reactor'
 
+require 'triplicity/cache'
+require 'triplicity/udisk2'
+
 module Triplicity
   class Application
-    attr_reader :dbus_busses, :reactor, :notifications
+    attr_reader :dbus_busses, :reactor, :notifications, :udisk2, :cache
 
     def self.start
       send(:new).setup_and_run
@@ -29,6 +32,8 @@ module Triplicity
         @reactor = reactor
 
         @notifications = Notifications.new(@reactor, session_bus)
+        @cache = Cache.new('triplicity')
+        @udisk2 = Udisk2.new(self)
 
         setup
       end
