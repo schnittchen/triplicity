@@ -14,6 +14,7 @@ require 'triplicity/reactor'
 
 require 'triplicity/cache'
 require 'triplicity/udisk2'
+require 'triplicity/notifications'
 
 module Triplicity
   class Application
