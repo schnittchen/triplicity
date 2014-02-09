@@ -48,11 +48,11 @@ module Triplicity
       end
 
       def suspend_notifications
-        @mutex.synchronize { @reminders_suspended = true }
+        @reminders_suspended = true
       end
 
       def resume_notifications
-        @mutex.synchronize { @reminders_suspended = false }
+        @reminders_suspended = false
         issue_reminder
       end
 
@@ -61,18 +61,13 @@ module Triplicity
       end
 
       def attempt_failed
-        now = Time.now
-        @mutex.synchronize {
-          # save this in cache instead?
-          @earliest_failure_time ||= now
-        }
+        # save this in cache instead?
+        @earliest_failure_time ||= Time.now
       end
 
       def notify_success
-        @mutex.synchronize do
-          @earliest_failure_time = nil
-          @last_notification_time = nil
-        end
+        @earliest_failure_time = nil
+        @last_notification_time = nil
       end
 
       def notify_error(error)
@@ -81,19 +76,14 @@ module Triplicity
       end
 
       def issue_reminder
-        reference = @mutex.synchronize do
-          time = Time.now
-          if !notifications_suspended? && notification_due?(time)
-            @last_notification_time = time
-          end
-        end
+        reference = Time.now
 
-        if reference
-          message = reminder_message(reference)
+        if !notifications_suspended? && notification_due?(reference)
+          @last_notification_time = reference
 
           @application.notifications.issue do |notification|
             notification.summary = 'Please connect your secondary backup location'
-            notification.body = message
+            notification.body = reminder_message(reference)
           end
         end
       end
