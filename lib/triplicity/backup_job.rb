@@ -89,7 +89,8 @@ module Triplicity
     end
 
     def backup_due?
-      time = Time.parse(@primary.site.latest_timestamp)
+      return true unless timestamp = @primary.site.latest_timestamp
+      time = Time.parse(timestamp)
       Time.now - time >= @schedule_seconds
     end
 
