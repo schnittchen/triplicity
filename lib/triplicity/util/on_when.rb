@@ -97,8 +97,8 @@ module OnWhen
     end
 
     def delegates_subscriptions(klass)
-      klass.include subscription_delegate_module
-      klass.include HasInstanceHandle
+      klass.send :include, subscription_delegate_module
+      klass.send :include, HasInstanceHandle
     end
   end
 
