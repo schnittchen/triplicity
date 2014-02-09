@@ -81,19 +81,21 @@ module Triplicity
       end
 
       def issue_reminder
-        message = @mutex.synchronize do
-          next if notifications_suspended?
-
-          reference = Time.now
-          next unless notification_due?(reference)
-          @last_notification_time = reference
-          reminder_message(reference)
+        reference = @mutex.synchronize do
+          time = Time.now
+          if !notifications_suspended? && notification_due?(time)
+            @last_notification_time = time
+          end
         end
 
-        @application.notifications.issue do |notification|
-          notification.summary = 'Please connect your secondary backup location'
-          notification.body = message
-        end if message
+        if reference
+          message = reminder_message(reference)
+
+          @application.notifications.issue do |notification|
+            notification.summary = 'Please connect your secondary backup location'
+            notification.body = message
+          end
+        end
       end
 
       def issue_begin_copy_notification
