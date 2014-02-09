@@ -1,0 +1,41 @@
+require 'triplicity/application'
+
+require 'triplicity/primary'
+require 'triplicity/duplication_plan'
+require 'triplicity/backup_job'
+
+module Triplicity
+  class TestApplication < Application
+    def setup
+      primary_path = '/mnt/duplicity/foo'
+
+      primary = Primary.new(primary_path, 'currently unused')
+
+      options = {
+        destinations: [
+          {
+            'max_space' => 11111111,
+            'device_uuid' => '65ac96c0-918e-11e3-baa8-0800200c9a66',
+            'rel_path' => 'backups'
+          }
+        ]
+      }
+
+      DuplicationPlan.new(options, primary, self)
+
+      backup_config = {
+        'command' => "duplicity --no-encryption  /home/thomas file://#{primary_path}",
+        'seconds' => 10,
+        'chdir' => '/home/thomas'
+      }
+
+      BackupJob.new(self, primary, backup_config)
+
+      # reactor.safe_trap('INT') do
+      #   primary.site_changed!
+      # end
+    end
+  end
+
+  TestApplication.start
+end

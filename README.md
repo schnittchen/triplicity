@@ -25,6 +25,7 @@ Triplicity can currently be considered alpha.
 
 * no tests
 * no way of configuration (have not decided on this yet)
+* no installation instruction (need to figure this out)
 * ridiculously small (and usually not configurable) time constants, to ease development and debugging
 
 ## Contributing
@@ -32,6 +33,24 @@ Triplicity can currently be considered alpha.
 If you find a bug or have some improvement, this is highly appreciated. Please file a pull request on Github.
 
 Please strip trailing whitespace and indent with two spaces. Source files should end in a newline. Well readable and (ruby-)idiomatic code is preferred.
+
+### Getting started
+
+Lacking configuration and installation, getting Triplicity up is a bit involved.
+
+If you haven't already install <a href="http://bundler.io/" target="_blank">bundler</a>, then run
+
+```
+bundle install
+```
+
+Copy test.rb.example to test.rb, modify for your needs and run
+
+```
+ruby -Ilib test.rb
+```
+
+(If you like you can use `pry` instead of `ruby`)
 
 ## License
 
