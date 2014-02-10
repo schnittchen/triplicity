@@ -13,8 +13,8 @@ require 'triplicity/dbus_loop_wrapper'
 require 'triplicity/reactor'
 
 require 'triplicity/cache'
-require 'triplicity/udisk2'
-require 'triplicity/notifications'
+require 'triplicity/service/udisk2'
+require 'triplicity/service/notifications'
 
 module Triplicity
   class Application
@@ -43,9 +43,9 @@ module Triplicity
       Reactor.new(@dbus_loop_wrapper) do |reactor|
         @reactor = reactor
 
-        @notifications = Notifications.new(@reactor, session_bus)
+        @notifications = Service::Notifications.new(@reactor, session_bus)
         @cache = Cache.new('triplicity')
-        @udisk2 = Udisk2.new(self)
+        @udisk2 = Service::Udisk2.new(self)
 
         setup
       end
