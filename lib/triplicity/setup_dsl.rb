@@ -77,6 +77,8 @@ module Triplicity
     end
 
     class DuplicationToExternalDiskTarget
+      include Util::ParseSpace
+
       def initialize
         config_getter = Proc.new do
           {
@@ -89,7 +91,7 @@ module Triplicity
       end
 
       def max_space(space)
-        @max_space = space
+        @max_space = parse_space(space)
       end
 
       def uuid(uuid)

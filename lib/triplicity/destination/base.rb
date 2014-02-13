@@ -136,6 +136,7 @@ module Triplicity
           begin
             perform_action_with_timestamp_housekeeping(action)
           rescue NotifiedOperationError, UnnotifiedOperationError => e
+            binding.pry
             error = e
           else
             performed = true
@@ -168,6 +169,7 @@ module Triplicity
       rescue NotifiedOperationError, UnnotifiedOperationError
         raise
       rescue => e
+        binding.pry
         raise UnnotifiedOperationError, e.message
       end
 
