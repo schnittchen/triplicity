@@ -37,7 +37,7 @@ module Triplicity
       end
 
       include Util::HasCache
-      include OnWhen
+      include Util::OnWhen
 
       on_when.delegates_subscriptions(Subscription)
       on_when.event :beginning_connection
@@ -48,7 +48,7 @@ module Triplicity
       on_when.event :ended_connection
 
       class UpToDateness
-        include OnWhen
+        include Util::OnWhen
 
         on_when.event :lost
         on_when.delegates_subscriptions(self)

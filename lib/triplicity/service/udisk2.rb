@@ -51,7 +51,7 @@ module Triplicity
       end
 
       DiskHandle = Struct.new(:uuid, :available_handlers, :unavailable_handlers, :mountpoint, :disk) do
-        include OnWhen
+        include Util::OnWhen
 
         on_when.condition :available
         on_when.delegates_subscriptions Disk

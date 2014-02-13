@@ -14,7 +14,7 @@ require 'triplicity/util/on_when'
 
 module Triplicity
   class Primary
-    include OnWhen
+    include Util::OnWhen
 
     on_when.delegates_subscriptions self
     on_when.event :change
