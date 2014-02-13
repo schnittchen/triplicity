@@ -82,8 +82,10 @@ module Triplicity
       end
 
       def notify_error(error)
-        ## NYI
-        # unless error.is_a?(Destination::Base::NotifiedOperationError)
+        @copy_notification.issue do |notification|
+          notification.summary = "Failed copying a plan's backup"
+          notification.body = error.message
+        end unless error.is_a?(Destination::Base::NotifiedOperationError)
       end
 
       def issue_reminder
