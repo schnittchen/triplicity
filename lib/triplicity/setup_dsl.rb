@@ -12,6 +12,7 @@
 require 'triplicity/primary'
 require 'triplicity/backup_job'
 
+require 'triplicity/core_ext/fixnum'
 require 'triplicity/util/parse_space'
 
 require 'pathname'
