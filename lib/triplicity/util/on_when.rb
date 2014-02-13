@@ -28,7 +28,7 @@ module OnWhen
         @instance_handle_class = Class.new(superclass_handle.instance_handle_class)
         @names = superclass_handle.names.dup
         @subscription_delegate_module = Module.new.tap do |mod|
-          mod.include superclass_handle.subscription_delegate_module
+          mod.send(:include, superclass_handle.subscription_delegate_module)
         end
       else
         @instance_handle_class = Class.new(InstanceHandleBase)
