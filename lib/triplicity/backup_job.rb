@@ -28,7 +28,7 @@ module Triplicity
 
       @startup_delay = 5
 
-      prepare_spawn_args(config)
+      @executions = config['executions']
 
       @thread = LoopingThread.performing { work }.whenever { work_to_do? }
     end
@@ -58,25 +58,18 @@ module Triplicity
       @primary.site_changed!
     end
 
-    def prepare_spawn_args(config)
-      command = config['command']
-      chdir = config['chdir']
-      @spawn_args = [*command]
-      @spawn_args << {
-        chdir: chdir
-      } if chdir
-    end
-
     def work
       notice_start
 
-      system(*@spawn_args)
-
-      if $?.success?
-        notice_success
-      else
-        notice_failure $?
+      @executions.each do |execution|
+        process_status = execution.run
+        unless process_status.success?
+          notice_failure process_status
+          return
+        end
       end
+
+      notice_success
     end
 
     def work_to_do?

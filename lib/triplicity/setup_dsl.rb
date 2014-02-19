@@ -11,6 +11,7 @@
 
 require 'triplicity/primary'
 require 'triplicity/backup_job'
+require 'triplicity/duplicity_execution'
 
 require 'triplicity/core_ext/fixnum'
 require 'triplicity/util/parse_space'
@@ -52,7 +53,7 @@ module Triplicity
           builder, seconds = block.call
 
           backup_config = {
-            'command' => builder.assemble,
+            'executions' => DuplicityExecution.new([builder.assemble]),
             'seconds' => seconds
           }
 
