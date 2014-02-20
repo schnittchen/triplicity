@@ -56,6 +56,9 @@ module Triplicity
         n.summary = "Backup succeeded"
       end
       @primary.site_changed!
+
+      next_time = Time.parse(@primary.site.latest_timestamp) + @schedule_seconds
+      @application.reactor.schedule_in(next_time - Time.now) { @thread.poke! }
     end
 
     def work
