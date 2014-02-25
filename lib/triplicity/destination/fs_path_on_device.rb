@@ -42,11 +42,10 @@ module Triplicity
 
       def with_accessible_site
         return unless mountpoint = @disk.mountpoint
-
         path = Pathname(mountpoint) + @rel_path
-        Dir.chdir(path) do
-          yield Site::Local.new(path)
-        end
+        return unless path.directory?
+
+        yield Site::Local.new(path)
 
         true
       end
