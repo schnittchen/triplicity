@@ -178,10 +178,15 @@ module Triplicity
       end
 
       def schedule_retry
-        @retry_trigger = @application.reactor.schedule_in(12) do
-          @retry_trigger = nil
-          maybe_ready_for_operation!
+        @retry_trigger = @application.reactor.schedule_in(12) do # XXX
+          retry_now!
         end
+      end
+
+      def retry_now!
+        old_trigger, @retry_trigger = @retry_trigger, nil
+        old_trigger.unschedule if old_trigger
+        maybe_ready_for_operation!
       end
 
       def retry_pending?
