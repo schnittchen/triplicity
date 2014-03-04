@@ -19,9 +19,9 @@ module Triplicity
       @dbus_thread = Thread.current
       @earlier_tasks_need_rescheduling = false
 
-      @dbus_loop_wrapper.calculating_wakeup_delay do
+      @dbus_loop_wrapper.calculating_wakeup_time do
         @earlier_tasks_need_rescheduling = true
-        calculate_wakeup_delay
+        calculate_wakeup_time
       end
 
       @dbus_loop_wrapper.waking_up do
@@ -111,11 +111,11 @@ module Triplicity
 
     private
 
-    def calculate_wakeup_delay
+    def calculate_wakeup_time
       @mutex.synchronize do
         return if @scheduled_tasks.empty?
 
-        @scheduled_tasks.map(&:earliest_time).min - Time.now
+        @scheduled_tasks.map(&:earliest_time).min
       end
     end
 

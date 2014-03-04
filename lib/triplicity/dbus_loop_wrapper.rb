@@ -18,7 +18,7 @@ module Triplicity
     def initialize
       @buses = []
       @waking_up_block = -> {}
-      @wakeup_in_calculator = -> {}
+      @wakeup_time_calculator = -> {}
       @mutex = Mutex.new
       @dbus_main = DBus::Main.new
       @asap_blocks = []
@@ -49,20 +49,20 @@ module Triplicity
       @breaker.schedule_break
     end
 
-    def calculating_wakeup_delay
-      @wakeup_in_calculator = Proc.new
+    def calculating_wakeup_time
+      @wakeup_time_calculator = Proc.new
     end
 
-    # block may be called prematurely or even when last calculating_wakeup_delay block returned nil
+    # block may be called prematurely or even when last calculating_wakeup_time block returned nil
     def waking_up
       @waking_up_block = Proc.new
     end
 
     def schedule_wakeup
-      seconds = @wakeup_in_calculator.call
+      time = @wakeup_time_calculator.call
 
-      bomb = if seconds
-        TimeBomb.plant(seconds) do
+      bomb = if time
+        TimeBomb.plant(time) do
           @breaker.schedule_break
         end
       end
@@ -93,8 +93,8 @@ module Triplicity
     end
 
     class TimeBomb
-      def self.plant(seconds, &block)
-        new(seconds, block)
+      def self.plant(time, &block)
+        new(time, block)
       end
 
       def suspend
@@ -104,9 +104,18 @@ module Triplicity
 
       private
 
-      def initialize(seconds, block)
+      def initialize(time, block)
         @thread = Thread.new do
-          sleep seconds if seconds > 0
+          while remaining_seconds = time - Time.now and remaining_seconds > 0
+            # avoid sleeping for long since suspend-to-ram time adds to sleep time
+            if remaining_seconds < 60
+              sleep remaining_seconds
+            else
+              sleep 60
+            end
+
+            break if @suspended
+          end
           block.call unless @suspended
         end
       end
