@@ -28,16 +28,12 @@ module Triplicity
 
         @disk = @application.udisk2.disk_by_uuid(@device_uuid)
         @disk.when_available do
-          maybe_ready_for_operation!
+          retry_now!
         end
       end
 
       def cache_ident_data
         [@device_uuid, @rel_path]
-      end
-
-      def ready_for_operation?
-        super and @disk.available?
       end
 
       def with_accessible_site

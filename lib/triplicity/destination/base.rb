@@ -111,6 +111,7 @@ module Triplicity
 
       private
 
+      # @TODO I think this can go in favour of retry_now!
       def maybe_ready_for_operation!
         thread.poke! if ready_for_operation?
       end
