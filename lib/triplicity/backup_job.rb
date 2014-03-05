@@ -31,6 +31,7 @@ module Triplicity
       @executions = config['executions']
 
       @thread = LoopingThread.performing { work }.whenever { work_to_do? }
+      schedule_action
     end
 
     private
@@ -57,8 +58,7 @@ module Triplicity
       end
       @primary.site_changed!
 
-      next_time = Time.parse(@primary.site.latest_timestamp) + @schedule_seconds
-      @application.reactor.schedule_in(next_time - Time.now) { @thread.poke! }
+      schedule_action
     end
 
     def work
@@ -82,6 +82,17 @@ module Triplicity
       end
 
       !recently_failed? && backup_due?
+    end
+
+    def schedule_action
+      timestamp = @primary.site.latest_timestamp
+      next_time = if timestamp
+        next_time = Time.parse(@primary.site.latest_timestamp) + @schedule_seconds
+      else
+        Time.now
+      end
+
+      @application.reactor.schedule_in(next_time - Time.now) { @thread.poke! }
     end
 
     def backup_due?
