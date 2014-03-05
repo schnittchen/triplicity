@@ -151,6 +151,7 @@ module Triplicity
           schedule_retry
         else
           on_when.trigger_unsuccessful_connection(self)
+          schedule_retry
         end
 
         on_when.trigger_ended_connection(self)
