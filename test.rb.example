@@ -14,10 +14,10 @@ module Triplicity
       setup_dsl = SetupDsl::MainTarget.new(executor)
 
       setup_dsl.instance_exec do
-        my_primary = PrimaryAt '/home/zaolin/backup'
+        my_primary = PrimaryAt '/home/<username>/backup'
 
         BackupTo(my_primary) do
-          from '/home/zaolin/Desktop'
+          from '/home/<username>/Desktop'
 
           ## configure options for all duplicity executions configured below in perform_every.
 
@@ -25,7 +25,7 @@ module Triplicity
 
           no_encryption
 
-          # exclude_globbing_filelist '/home/thomas/local/duplicity-globbing-exclude'
+          exclude_globbing_filelist '/home/<username>/local/duplicity-globbing-exclude'
 
           full_if_older_than 5.days # you can also use .minutes, .hours, ... and + and -
 
@@ -35,7 +35,7 @@ module Triplicity
 
           # produce any option with extra_arguments:
           extra_arguments '-vdebug'
-          extra_arguments '--log-file', '/home/zaolin/duplicity.out'
+          extra_arguments '--log-file', '/home/<username>/duplicity.out'
 
           # perform a backup when the youngest existing is more than 8 hours old
           perform_every(8.hours) do
@@ -57,11 +57,11 @@ module Triplicity
           end
         end
 
-        #my_primary.duplicate_to_external_disk do
-        #  max_space '120G'
-        #  uuid '65ac96c0-918e-11e3-baa8-0800200c9a66'
-        #  relative_path 'backups'
-        #end
+        my_primary.duplicate_to_external_disk do
+          max_space '120G'
+          uuid '65ac96c0-918e-11e3-baa8-0800200c9a66'
+          relative_path 'backups'
+        end
       end
       # Lets do the job
       executor.perform
