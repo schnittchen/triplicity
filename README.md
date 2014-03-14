@@ -34,9 +34,16 @@ If you find a bug or have some improvement, this is highly appreciated. Please f
 
 Please strip trailing whitespace and indent with two spaces. Source files should end in a newline. Well readable and (ruby-)idiomatic code is preferred.
 
-### Getting started
+## Getting started
 
 Lacking configuration and installation, getting Triplicity up is a bit involved.
+
+### Dependencies
+
+* bundler
+* duplicity
+
+### Installation
 
 If you haven't already install <a href="http://bundler.io/" target="_blank">bundler</a>, then run
 
