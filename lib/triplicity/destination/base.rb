@@ -57,11 +57,11 @@ module Triplicity
 
         yield Subscription.new(self)
 
-        up_to_dateness.on_lost do
+        initialize_destination(options)
+
+        up_to_dateness.when_lost do
           maybe_ready_for_operation!
         end
-
-        initialize_destination(options)
       end
 
       def up_to_dateness

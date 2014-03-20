@@ -16,10 +16,8 @@ module Triplicity
     class UpToDateness
       include Util::OnWhen
 
-      on_when.event :lost
+      on_when.condition :lost
       on_when.delegates_subscriptions(self)
-
-      alias_method :when_lost, :on_lost # @TODO
 
       def initialize(cache, cache_ident)
         @cache, @cache_ident = cache, cache_ident
@@ -42,7 +40,7 @@ module Triplicity
 
       def primary_timestamp_changed(timestamp)
         @primary_timestamp = timestamp
-        on_when.trigger_lost unless given?
+        on_when.signal_lost unless given?
       end
 
       def update_destination_timestamp(timestamp)
@@ -51,7 +49,7 @@ module Triplicity
         # ensures it is only happening once at a time)
         @cache.destination_latest_timestamp(@cache_ident, timestamp)
         @destination_timestamp = timestamp
-        on_when.trigger_lost unless given?
+        on_when.signal_lost { !given? }
       end
     end
   end
