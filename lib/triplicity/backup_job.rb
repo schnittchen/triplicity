@@ -24,7 +24,7 @@ module Triplicity
       @application, @primary = application, primary
 
       @schedule_seconds = config['seconds']
-      @retry_seconds = config['retry_seconds'] || 5
+      @retry_seconds = config['retry_seconds'] || 600
 
       @startup_delay = 5
 
