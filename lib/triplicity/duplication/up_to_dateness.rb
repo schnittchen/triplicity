@@ -12,7 +12,7 @@
 require 'triplicity/util/on_when'
 
 module Triplicity
-  module Destination
+  module Duplication
     class UpToDateness
       include Util::OnWhen
 

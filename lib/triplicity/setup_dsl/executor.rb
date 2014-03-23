@@ -15,7 +15,7 @@ require 'triplicity/backup_job'
 require 'triplicity/duplication/destination/factory'
 require 'triplicity/duplication/notifier'
 require 'triplicity/duplication/orchestrator'
-require 'triplicity/destination/up_to_dateness'
+require 'triplicity/duplication/up_to_dateness'
 
 module Triplicity
   module SetupDsl
@@ -67,7 +67,7 @@ module Triplicity
             factory = Duplication::Destination::Factory.new(primary, @application, options)
             destination = factory.destination
             notifier = factory.notifier
-            up_to_dateness = Destination::UpToDateness.new(@application.cache, factory.cache_ident)
+            up_to_dateness = Duplication::UpToDateness.new(@application.cache, factory.cache_ident)
             orchestrator = Duplication::Orchestrator.new(@application, primary, destination, up_to_dateness, notifier)
 
             orchestrator.activate
