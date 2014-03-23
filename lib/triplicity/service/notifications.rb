@@ -56,6 +56,10 @@ module Triplicity
 
           self
         end
+
+        def close
+          @interface.CloseNotification(@id) if @id
+        end
       end
 
       def issue
