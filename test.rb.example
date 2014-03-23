@@ -1,9 +1,5 @@
 require 'triplicity/application'
 
-# require 'triplicity/primary'
-# require 'triplicity/duplication_plan'
-# require 'triplicity/backup_job'
-
 require 'triplicity/setup_dsl/executor'
 require 'triplicity/setup_dsl/main_target'
 
@@ -63,7 +59,8 @@ module Triplicity
           relative_path 'backups'
         end
       end
-      # Lets do the job
+
+      # connect the wires
       executor.perform
     end
   end
