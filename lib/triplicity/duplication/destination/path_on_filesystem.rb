@@ -33,11 +33,15 @@ module Triplicity
           @disk.when_available(&@becoming_available_handler)
         end
 
-        # @TODO establish an interface for these things:
+        class << self
+          def cache_ident_data(options)
+            [options['device_uuid'], options['rel_path']]
+          end
 
-        # def cache_ident_data
-        #   [@device_uuid, @rel_path]
-        # end
+          def create(application, options)
+            new(application, options)
+          end
+        end
 
         def with_accessible_site
           return unless mountpoint = @disk.mountpoint

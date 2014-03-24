@@ -28,24 +28,6 @@ module Triplicity
           @options = options
         end
 
-        # there is only one kind of destination currently,
-        # oversimplifying this factory
-
-        def destination
-          @destination ||= PathOnFilesystem.new(@application, @options)
-        end
-
-        def cache_ident_data
-          device_uuid = @options['device_uuid']
-          rel_path = @options['rel_path']
-
-          [device_uuid, rel_path]
-        end
-
-        def notifier
-          @notifier ||= Duplication::Notifier.new(@application.notifications)
-        end
-
         def assemble_and_activate
           orchestrator = Duplication::Orchestrator.new(@application, @primary, destination, up_to_dateness, notifier)
 
@@ -54,8 +36,26 @@ module Triplicity
           destination.activate
         end
 
+        private
+
+        def destination
+          @destination ||= destination_factory.create(@application, @options)
+        end
+
+        def notifier
+          @notifier ||= Duplication::Notifier.new(@application.notifications)
+        end
+
         def up_to_dateness
           @up_to_dateness ||= Duplication::UpToDateness.new(@application.cache, cache_ident)
+        end
+
+        def cache_ident_data
+          destination_factory.cache_ident_data(@options)
+        end
+
+        def destination_factory
+          PathOnFilesystem
         end
       end
     end
