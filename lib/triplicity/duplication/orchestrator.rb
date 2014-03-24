@@ -68,10 +68,8 @@ module Triplicity
 
         @up_to_dateness.when_lost { work_is_possibly_due! }
 
-        @primary.on_change do
-          timestamp = @primary.site.latest_timestamp
-          @up_to_dateness.primary_timestamp_changed timestamp
-        end
+        @primary.on_change { propagate_primary_timestamp }
+        propagate_primary_timestamp
       end
 
       def work_is_possibly_due!
@@ -82,6 +80,11 @@ module Triplicity
       end
 
       private
+
+      def propagate_primary_timestamp
+        timestamp = @primary.site.latest_timestamp
+        @up_to_dateness.primary_timestamp_changed timestamp
+      end
 
       def copying_due?(options = {}) # @TODO move to State
         !@state.up_to_date? &&
