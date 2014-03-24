@@ -30,6 +30,7 @@ module Triplicity
 
         def assemble_and_activate
           orchestrator = Duplication::Orchestrator.new(@application, @primary, destination, up_to_dateness, notifier)
+          orchestrator.max_space = @options['max_space']
 
           orchestrator.activate
           destination.becoming_available_handler(&orchestrator.method(:work_is_possibly_due!))
@@ -38,8 +39,14 @@ module Triplicity
 
         private
 
+        def destination_options
+          result = @options.dup
+          result.delete 'max_space'
+          result
+        end
+
         def destination
-          @destination ||= destination_factory.create(@application, @options)
+          @destination ||= destination_factory.create(@application, destination_options)
         end
 
         def notifier

@@ -25,6 +25,8 @@ module Triplicity
         @state = State.new(@up_to_dateness)
       end
 
+      attr_accessor :max_space
+
       class State
         attr_accessor :failed_since, :last_notification_at, :retry_trigger, :reminder_trigger
 
