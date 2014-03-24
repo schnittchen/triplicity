@@ -13,9 +13,6 @@ require 'triplicity/primary'
 require 'triplicity/backup_job'
 
 require 'triplicity/duplication/destination/factory'
-require 'triplicity/duplication/notifier'
-require 'triplicity/duplication/orchestrator'
-require 'triplicity/duplication/up_to_dateness'
 
 module Triplicity
   module SetupDsl
@@ -65,14 +62,7 @@ module Triplicity
 
           options_array.each do |options|
             factory = Duplication::Destination::Factory.new(primary, @application, options)
-            destination = factory.destination
-            notifier = factory.notifier
-            up_to_dateness = Duplication::UpToDateness.new(@application.cache, factory.cache_ident)
-            orchestrator = Duplication::Orchestrator.new(@application, primary, destination, up_to_dateness, notifier)
-
-            orchestrator.activate
-            destination.becoming_available_handler(&orchestrator.method(:work_is_possibly_due!))
-            destination.activate
+            factory.assemble_and_activate
           end
         end
       end

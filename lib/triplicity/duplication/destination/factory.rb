@@ -10,7 +10,10 @@
 #
 
 require 'triplicity/duplication/destination/path_on_filesystem'
+
 require 'triplicity/duplication/notifier'
+require 'triplicity/duplication/orchestrator'
+require 'triplicity/duplication/up_to_dateness'
 
 require 'triplicity/util/has_cache'
 
@@ -29,7 +32,7 @@ module Triplicity
         # oversimplifying this factory
 
         def destination
-          PathOnFilesystem.new(@application, @options)
+          @destination ||= PathOnFilesystem.new(@application, @options)
         end
 
         def cache_ident_data
@@ -40,7 +43,19 @@ module Triplicity
         end
 
         def notifier
-          Duplication::Notifier.new(@application.notifications)
+          @notifier ||= Duplication::Notifier.new(@application.notifications)
+        end
+
+        def assemble_and_activate
+          orchestrator = Duplication::Orchestrator.new(@application, @primary, destination, up_to_dateness, notifier)
+
+          orchestrator.activate
+          destination.becoming_available_handler(&orchestrator.method(:work_is_possibly_due!))
+          destination.activate
+        end
+
+        def up_to_dateness
+          @up_to_dateness ||= Duplication::UpToDateness.new(@application.cache, cache_ident)
         end
       end
     end
