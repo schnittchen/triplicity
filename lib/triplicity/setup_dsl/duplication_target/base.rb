@@ -21,14 +21,16 @@ module Triplicity
           @max_space = parse_space(space)
         end
 
-        def destination_name(name)
-          # @FIXME TBD
+        def location_name(name)
+          @location_name = name
         end
 
         def _base_config
-          {
+          result = {
             'max_space' => @max_space,
           }
+          result['location_name'] = @location_name if @location_name
+          result
         end
       end
     end

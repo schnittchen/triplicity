@@ -29,6 +29,12 @@ module Triplicity
             'rel_path' => @relative_path
           }
         end
+
+        def _base_config
+          {
+            'location_name' => 'external disk'
+          }.merge(super)
+        end
       end
     end
   end

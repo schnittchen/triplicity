@@ -51,6 +51,7 @@ module Triplicity
         def notifier
           @notifier ||= Duplication::Notifier.new(@application.notifications).tap do |notifier|
             notifier.backup_name = @primary.backup_name
+            notifier.location_name = @base_options['location_name'] if @base_options.key?('location_name')
           end
         end
 
