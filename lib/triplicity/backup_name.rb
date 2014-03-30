@@ -35,7 +35,7 @@ module Triplicity
       elsif @path
         @path
       else
-        "your backup"
+        "your data"
       end
     end
   end
