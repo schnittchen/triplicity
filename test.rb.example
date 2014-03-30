@@ -11,6 +11,7 @@ module Triplicity
 
       setup_dsl.instance_exec do
         my_primary = PrimaryAt '/home/<username>/backup'
+        my_primary.name = 'all my precious data' #optional!
 
         BackupTo(my_primary) do
           from '/home/<username>/Desktop'
@@ -36,7 +37,7 @@ module Triplicity
           # perform a backup when the youngest existing is more than 8 hours old
           perform_every(8.hours) do
             # Since you will want to free space before performing a backup,
-            # this consists of several steps, each line resulting in a duplicity invokation.
+            # this consists of several steps, each line resulting in a duplicity invocation.
             # Most lines mimic duplicity action arguments.
 
             # Below is an exhaustive, non-realistic usage example.
