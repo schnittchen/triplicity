@@ -1,5 +1,5 @@
 #
-# duplication_target.rb - DSL target for the duplication to external disk
+# to_external_disk.rb - DSL target for the duplication to external disk
 #
 # Copyright (C) 2014 Thomas Stratmann <thomas.stratmann@rub.de>
 # All rights reserved.
