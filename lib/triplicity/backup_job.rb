@@ -36,10 +36,14 @@ module Triplicity
 
     private
 
+    def single_backup_phrase
+      @primary.backup_name.single_backup_phrase
+    end
+
     def notice_start
       @notification = @application.notifications.issue do |n|
         n.summary = "Beginning backup"
-        n.body = "Backup on #{@primary.instance_variable_get(:@path)}" # @FIXME
+        n.body = "Duplicity is creating #{single_backup_phrase}"
       end
     end
 
@@ -47,7 +51,7 @@ module Triplicity
       @last_fail_time = Time.now
       @notification.issue do |n|
         n.summary = "Backup FAILED"
-        n.body = "Backup process exited with status #{process_status.exitstatus}"
+        n.body = "Duplicity failed creating #{single_backup_phrase}: exited with status #{process_status.exitstatus}"
       end
       @application.reactor.schedule_in(@retry_seconds) { @thread.poke! }
     end
@@ -55,6 +59,7 @@ module Triplicity
     def notice_success
       @notification.issue do |n|
         n.summary = "Backup succeeded"
+        n.body = "Duplicity created #{single_backup_phrase}"
       end
       @primary.site_changed!
 

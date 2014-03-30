@@ -16,16 +16,18 @@ module Triplicity
         @notifications = notifications
       end
 
+      attr_accessor :backup_name
+
       def begin_copying
         progressing_notification do |notification|
-          notification.summary = "Beginning to copy a plan's backup"
+          notification.summary = "Beginning to copy #{backups_phrase}"
           notification.body = "Copying source to #{destination_human_name}"
         end
       end
 
       def end_copying_successfully
         progressing_notification(success: true) do |notification|
-          notification.summary = "Finished copying a plan's backup"
+          notification.summary = "Finished copying #{backups_phrase}"
           notification.body = "Copied source to #{destination_human_name}"
         end
       end
@@ -40,7 +42,7 @@ module Triplicity
       # @TODO think this reason thing over
       def copying_failed(reason)
         progressing_notification(failure: true) do |notification|
-          notification.summary = "Failed copying a plan's backup"
+          notification.summary = "Failed copying #{backups_phrase}"
           notification.body = "Reason: #{reason}"
         end # unless error.is_a?(Destination::Base::NotifiedOperationError)
       end
@@ -50,10 +52,14 @@ module Triplicity
       end
 
       def reminder_message
-        "Destination #{destination_human_name} latest backup is of NYI"
+        "Destination #{destination_human_name} latest backup of #{backups_phrase} is of NYI"
       end
 
       private
+
+      def backups_phrase
+        backup_name.backups_phrase
+      end
 
       def progressing_notification(options = {})
         notification = if @notification

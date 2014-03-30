@@ -50,7 +50,9 @@ module Triplicity
         end
 
         def notifier
-          @notifier ||= Duplication::Notifier.new(@application.notifications)
+          @notifier ||= Duplication::Notifier.new(@application.notifications).tap do |notifier|
+            notifier.backup_name = @primary.backup_name
+          end
         end
 
         def up_to_dateness

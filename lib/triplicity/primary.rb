@@ -11,6 +11,7 @@
 
 require 'triplicity/site/local'
 require 'triplicity/util/on_when'
+require 'triplicity/backup_name'
 
 module Triplicity
   class Primary
@@ -19,11 +20,12 @@ module Triplicity
     on_when.delegates_subscriptions self
     on_when.event :change
 
-    attr_reader :name
+    attr_reader :backup_name
 
-    def initialize(path, name)
+    def initialize(path)
       @on_when = on_when_new
-      @path, @name = path, name
+      @path = path
+      @backup_name = BackupName.new
     end
 
     def site

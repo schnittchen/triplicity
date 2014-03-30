@@ -22,6 +22,10 @@ module Triplicity
         @executor.register_primary self
       end
 
+      def name=(name)
+        @executor.primary_named(self, name)
+      end
+
       def duplicate_to_external_disk
         target = DuplicationTarget::ToExternalDisk.new
         target.instance_exec(&Proc.new)

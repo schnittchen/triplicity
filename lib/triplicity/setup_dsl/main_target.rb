@@ -31,6 +31,7 @@ module Triplicity
         target._backup_schedules.each do |seconds, executions|
           @executor.register_backup_schedule primary, seconds, executions
         end
+        @executor.primary_backs_up_path(primary, target._source)
       end
     end
   end

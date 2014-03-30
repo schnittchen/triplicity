@@ -23,7 +23,7 @@ module Triplicity
         @dsl_primaries = {}
         @primaries = Hash.new do |hash, key|
           dsl_primary = @dsl_primaries[key]
-          hash[key] = Triplicity::Primary.new(dsl_primary.path, 'currently unused')
+          hash[key] = Triplicity::Primary.new(dsl_primary.path)
         end
         @duplications = Hash.new { |hash, key| hash[key] = [] }
         @schedules = []
@@ -33,12 +33,20 @@ module Triplicity
         @dsl_primaries[dsl_primary.object_id] = dsl_primary
       end
 
+      def primary_named(dsl_primary, name)
+        primary(dsl_primary).backup_name.configured_name = name
+      end
+
       def register_duplication_for(dsl_primary, kind, options)
         @duplications[dsl_primary.object_id] << [kind, options]
       end
 
       def register_backup_schedule(primary, seconds, executions)
         @schedules << [primary, seconds, executions]
+      end
+
+      def primary_backs_up_path(primary, path)
+        primary(primary).backup_name.primary_keeps_backups_of_path(path)
       end
 
       def perform

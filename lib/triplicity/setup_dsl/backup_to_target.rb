@@ -44,6 +44,10 @@ module Triplicity
       def _backup_schedules
         @schedules
       end
+
+      def _source
+        @source.to_s
+      end
     end
   end
 end
