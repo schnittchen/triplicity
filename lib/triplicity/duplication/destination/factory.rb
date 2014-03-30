@@ -23,14 +23,15 @@ module Triplicity
       class Factory
         include Util::HasCache
 
-        def initialize(primary, application, options)
+        def initialize(primary, application, base_options, options)
           @primary, @application = primary, application
+          @base_options = base_options
           @options = options
         end
 
         def assemble_and_activate
           orchestrator = Duplication::Orchestrator.new(@application, @primary, destination, up_to_dateness, notifier)
-          orchestrator.max_space = @options['max_space']
+          orchestrator.max_space = @base_options['max_space']
 
           orchestrator.activate
           destination.becoming_available_handler(&orchestrator.method(:work_is_possibly_due!))
@@ -39,10 +40,8 @@ module Triplicity
 
         private
 
-        def destination_options
-          result = @options.dup
-          result.delete 'max_space'
-          result
+        def destination_options # @TODO inline
+          @options.dup
         end
 
         def destination

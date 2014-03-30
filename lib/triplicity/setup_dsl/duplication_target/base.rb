@@ -1,5 +1,5 @@
 #
-# to_external_disk.rb - DSL target for the duplication to external disk
+# basse.rb - base class for DSL targets for duplication of backups
 #
 # Copyright (C) 2014 Thomas Stratmann <thomas.stratmann@rub.de>
 # All rights reserved.
@@ -9,24 +9,25 @@
 # the GNU General Public License version 2.
 #
 
-require 'triplicity/setup_dsl/duplication_target/base'
+require 'triplicity/util/parse_space'
 
 module Triplicity
   module SetupDsl
     module DuplicationTarget
-      class ToExternalDisk < Base
-        def uuid(uuid)
-          @uuid = uuid
+      class Base
+        include Util::ParseSpace
+
+        def max_space(space)
+          @max_space = parse_space(space)
         end
 
-        def relative_path(path)
-          @relative_path = path
+        def destination_name(name)
+          # @FIXME TBD
         end
 
-        def _config
+        def _base_config
           {
-            'device_uuid' => @uuid,
-            'rel_path' => @relative_path
+            'max_space' => @max_space,
           }
         end
       end

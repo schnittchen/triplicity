@@ -31,7 +31,8 @@ module Triplicity
         target.instance_exec(&Proc.new)
 
         options = target._config
-        @executor.register_duplication_for(self, 'fs_path_on_device', options)
+        base_options = target._base_config
+        @executor.register_duplication_for(self, 'fs_path_on_device', base_options, options)
       end
     end
   end

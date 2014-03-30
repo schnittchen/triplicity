@@ -37,8 +37,8 @@ module Triplicity
         primary(dsl_primary).backup_name.configured_name = name
       end
 
-      def register_duplication_for(dsl_primary, kind, options)
-        @duplications[dsl_primary.object_id] << [kind, options]
+      def register_duplication_for(dsl_primary, kind, base_options, options)
+        @duplications[dsl_primary.object_id] << [kind, base_options, options]
       end
 
       def register_backup_schedule(primary, seconds, executions)
@@ -60,18 +60,16 @@ module Triplicity
           BackupJob.new(@application, primary, backup_config)
         end
 
-        @duplications.each_pair do |primary_id, data|
+        @duplications.each_pair do |primary_id, duplication_data|
           primary = primary(primary_id)
 
-          raise "something went wrong" unless
-            data.all? { |item| item.first == 'fs_path_on_device' }
+          duplication_data.each do |kind, base_options, options|
+            raise "something went wrong" unless kind == 'fs_path_on_device'
 
-          options_array = data.map(&:last)
-
-          options_array.each do |options|
-            factory = Duplication::Destination::Factory.new(primary, @application, options)
+            factory = Duplication::Destination::Factory.new(primary, @application, base_options, options)
             factory.assemble_and_activate
           end
+
         end
       end
 
