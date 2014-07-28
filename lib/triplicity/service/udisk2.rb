@@ -83,9 +83,12 @@ module Triplicity
 
             system = mounted_filesystems.find { |sys| sys[:uuid] == uuid }
             if system
-              disk_handle.mountpoint = system[:mountpoint] if system
+              disk_handle.mountpoint = system[:mountpoint]
             else
-              disk_handle.mountpoint = nil
+              disk_handle.on_when.signal_available do
+                disk_handle.mountpoint = nil
+                false
+              end
             end
           else
             # we previously assumed this disk not to be mounted
@@ -94,6 +97,7 @@ module Triplicity
             if system
               disk_handle.on_when.signal_available do
                 disk_handle.mountpoint = system[:mountpoint]
+                true
               end
             end
           end
